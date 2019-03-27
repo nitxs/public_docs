@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <button type="button" id="btn1">点击</button>
+</body>
+<script>
+    function clickMethod(event){
+        var pop = document.getElementById('btn1');
+
+        pop.style.left = event.clientX + 'px';
+        pop.style.top = event.clientY + 'px';
+        pop.className = 'revel';
+    }
+    document.getElementById('btn1').addEventListener('click', clickMethod)
+
+    var method = {
+        handleClick: function(event){
+            this.showPop(event);
+        },
+        showPop: function(event){
+            var pop = document.getElementById('btn1');
+            pop.style.left = event.clientX + 'px';
+            pop.style.top = event.clientY + 'px';
+            pop.className = 'revel';
+        }
+    }
+    document.getElementById('btn1').addEventListener('click', function(event){
+        method.handleClick(event)
+    });
+</script>
+</html>

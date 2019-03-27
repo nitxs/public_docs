@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// var p1 = function(num){
+//     return new Promise(function (resolve, reject) {
+//         if(num > 10){
+//             resolve(num)
+//         }else {
+//             reject("num 小于等于10")
+//         }
+//     })
+// }
+
+// function res(num) {
+//     return new Promise(function (resolve, reject) {
+//         console.log(p1(num));
+//         resolve(p1(num))
+//     })
+// }
+// res(18)
+// .then(function (val) {
+//     console.log(val);
+// })
+// .catch(function (err) {
+//     console.log(err);
+// })
+
+
+// var res = Promise.resolve(p1(12));
+// res
+// .then(function(val){
+//     console.log(val);
+// })
+// .catch(function (err) {
+//     console.log(err);
+// })
+
+var p1 = Promise.resolve(42);
+var p2 = Promise.resolve("Hello World");
+var p3 = Promise.reject("Oops");
+
+Promise.all([])
+.then(function(val){
+    console.log(val);   // []
+})
+.catch(function(err){
+    console.log(err);   
+})
+
+Promise.race([])
+.then(function(val){
+    console.log(val);   
+})
+.catch(function(err){
+    console.log(err);   
+})
+
+//如果有任何promise被拒绝，返回的主promise就会立即被拒绝(并且会抛弃任何其他promise的结果)，你只会得到第一个拒绝promise的拒绝理由值
+Promise.all([p1, p2, p3])
+.then(function(val){
+    console.log(val);
+})
+.catch(function(err){
+    console.log(err);   // Oops
+})
+
+// 第一个决议的promise(完成或拒绝)取胜，并且其决议结果成为返回promise的决议
+Promise.race([p1, p2, p3])
+.then(function(val){
+    console.log(val);   // 42
+})
+.catch(function(err){
+    console.log(err);   
+})
+
+// 如果完成的话，就会得到一个数组，其中包含传入的所有promise的完成值
+Promise.all([p1, p2])
+.then(function(val){
+    console.log(val);   // [42, Hello World]
+})
+.catch(function(err){
+    console.log(err);   
+})
+
+
+</script>
+</html>

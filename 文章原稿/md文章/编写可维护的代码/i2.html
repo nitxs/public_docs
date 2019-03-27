@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="div1">
+        <!-- <div>11</div>
+        <div>22</div> -->
+    </div>
+</body>
+<script>
+    // throw new Error('error msg!');
+    // function getDiv(el){
+    //     if(el && el.getElementsByTagName){
+    //         return el.getElementsByTagName('div');
+    //     }else {
+    //         throw new Error('getDiv(): Argument must be a Dom Element.')
+    //     }
+    // }
+    // var div = document.getElementById('div1');
+    // getDiv(null);
+
+    // try {
+    //     function aa(){
+    //         var a = 10;
+    //         var b = 12;
+    //         console.log(a + b);
+    //         return 99;
+    //     }
+    //     console.log(aa());
+    // } catch(err) {
+    //     console.log('catch msg: ' + err);
+    // } finally {
+    //     console.log('finally msg.');
+    // }
+
+    var obj = {
+        name: 'nitx',
+        sayName: function(){
+            console.log(this.name);
+        }
+    }
+
+    // var obj2 = Object.create(obj);
+
+    // obj2.sayName();
+
+    // obj2.sayName = function(){
+    //     console.log('her name is sxm.');
+    // }
+    // obj2.sayName();     //her name is sxm.
+    // obj.sayName();      // nitx
+
+    // var obj3 = Object.create(obj, {
+    //     name: {
+    //         value: 'sxm'
+    //     }
+    // })
+    // obj3.sayName();
+
+    class Person{
+        constructor(name, age){
+            this.name = name;
+            this.age = age;
+        }
+        sayName() {
+            console.log(this.name);
+        }
+    }
+
+    class Student extends Person{
+        constructor(name, age, score){
+            super(name, age);
+            this.score = score;
+        }
+    }
+
+    var s = new Student('nitx', '30', 'A');
+    s.sayName();    //nitx
+
+
+</script>
+</html>

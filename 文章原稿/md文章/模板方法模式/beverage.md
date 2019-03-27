@@ -1,0 +1,223 @@
+模板方法模式，是一种典型的通过封装变化提高系统扩展性的设计模式。在传统的面向对象语言中，一个运用了模板方法模式的程序中，子类的方法种类和执行顺序都是基本不变的，所以把这部分逻辑抽象到父类的模板方法中。而子类的方法具体怎么实现则是可变的，于是我们把这部分变化的逻辑封装到子类中。通过增加新的子类，就能给系统增加新的功能，并不需要改动抽象父类以及其他子类，这符合开放-封闭原则。
+
+定义抽象类，父类
+
+模板方法模式
+
+Beverage是模板类，Beverage.prototype.init是模板方法，它被称为模板方法的原因是它内部封装了子类的算法框架，它作为一个算法的模板，指导子类以何种顺序去执行方法
+```javascript
+var Beverage = function(){}
+
+Beverage.prototype.boilWater = function(){
+    console.log('把水煮沸');
+}
+
+Beverage.prototype.brew = function(){
+    throw new Error('子类必须重写brew方法')     
+}      //空方法，由子类重写，如果子类不重写该方法，会直接抛出异常提醒
+
+Beverage.prototype.pourInCup = function(){
+    throw new Error('子类必须重写pourInCup方法')
+}     //空方法，由子类重写，如果子类不重写该方法，会直接抛出异常提醒
+
+Beverage.prototype.addCondiments = function(){
+    throw new Error('子类必须重写addCondiments方法')
+}     //空方法，由子类重写，如果子类不重写该方法，会直接抛出异常提醒
+
+Beverage.prototype.init = function(){   //初始化方法    
+    this.boilWater()
+    this.brew()
+    this.pourInCup()
+    this.addCondiments()
+}
+
+//子类继承父类
+//咖啡类，泡咖啡
+var Coffee = function(){}
+
+Coffee.prototype = new Beverage()
+
+Coffee.prototype.brew = function(){
+    console.log('用沸水冲泡咖啡');
+}
+
+Coffee.prototype.pourInCup = function(){
+    console.log('把咖啡倒进杯子');
+}
+
+Coffee.prototype.addCondiments = function(){
+    console.log('加糖和牛奶');
+}
+
+var oneCoffee = new Coffee()
+
+oneCoffee.init()
+
+//子类
+//茶类，泡茶
+var Tea = function(){}
+Tea.prototype = new Beverage()
+
+Tea.prototype.brew = function(){
+    console.log('用沸水浸泡茶叶');
+}
+
+Tea.prototype.pourInCup = function(){
+    console.log('把茶倒进杯子');
+}
+
+Tea.prototype.addCondiments = function(){
+    console.log('加柠檬');
+}
+
+var oneTea = new Tea()
+
+oneTea.init()
+```
+
+父类中钩子方法
+
+在之前的Beverage类中，模板方法init已经规定好饮料冲泡的顺序，大部分情况是合适的，但如果有的饮料不加调料呢？所以需要有个合适的方法来使得子类不受父类模板方法的约束。
+
+钩子方法(hook)可以用来解决这个问题，放置钩子是隔离变化的一种常见手段。在父类中容易变化的地方放置钩子，钩子可以有一个默认的实现，究竟要不要“挂钩”，由子类自行决定。
+
+钩子方法的返回结果决定了模板方法后面部分的执行步骤，也就是程序接下来的走向，如此，程序就拥有变化的可能。
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+var Beverage = function(){}
+
+Beverage.prototype.boilWater = function(){
+    console.log('把水煮沸');
+}
+
+Beverage.prototype.brew = function(){
+    throw new Error('子类必须重写brew方法')     
+}      //空方法，由子类重写，如果子类不重写该方法，会直接抛出异常提醒
+
+Beverage.prototype.pourInCup = function(){
+    throw new Error('子类必须重写pourInCup方法')
+}     //空方法，由子类重写，如果子类不重写该方法，会直接抛出异常提醒
+
+Beverage.prototype.addCondiments = function(){
+    throw new Error('子类必须重写addCondiments方法')
+}     //空方法，由子类重写，如果子类不重写该方法，会直接抛出异常提醒
+
+Beverage.prototype.customerWantsCondiments = function(){    //钩子方法，
+    return true;    //默认需要调料
+}
+
+Beverage.prototype.init = function(){   //初始化方法    
+    this.boilWater()
+    this.brew()
+    this.pourInCup()
+    if(this.customerWantsCondiments()){   //在模板方法中，默认是需要调料的
+        this.addCondiments()
+    }
+    
+}
+
+//子类
+var CoffeeWithHooK = function(){}
+
+CoffeeWithHooK.prototype = new Beverage()
+
+CoffeeWithHooK.prototype.brew = function(){
+    console.log('用沸水冲泡咖啡');
+}
+
+CoffeeWithHooK.prototype.pourInCup = function(){
+    console.log('把咖啡倒进杯子');
+}
+
+CoffeeWithHooK.prototype.addCondiments = function(){
+    console.log('加糖和牛奶');
+}
+
+CoffeeWithHooK.prototype.customerWantsCondiments = function(){
+    return window.confirm('您需要加调料么?')
+}
+
+var oneCoffeeWithHooK = new CoffeeWithHooK()
+
+oneCoffeeWithHooK.init()
+
+</script>
+</html>
+```
+
+在js中，基于继承的应用场景其实并不多，因为有更好的选择，模板方法模式使用高阶函数的写法会更为优雅。
+```javascript
+var Beverage = function(param){
+    var boilWater = function(){
+        console.log('把水煮沸');
+    }
+
+    var brew = param.brew || function(){
+        throw new Error('必须传递brew方法')
+    }
+
+    var pourInCup = param.pourInCup || function(){
+        throw new Error('必须传递pourInCup方法')
+    }
+
+    var addCondiments = param.addCondiments || function(){
+        throw new Error('必须传递addCondiments方法')
+    }
+
+    var F = function(){}
+
+    F.prototype.init = function(){
+        boilWater();
+        brew();
+        pourInCup();
+        addCondiments();
+    }
+
+    return F;
+}
+
+var Coffee = new Beverage({
+    brew: function(){
+        console.log('用沸水冲泡咖啡');
+    },
+    pourInCup: function(){
+        console.log('把咖啡倒进杯子');
+    },
+    addCondiments: function(){
+        console.log('加糖和牛奶');
+    }
+})
+
+var Tea = new Beverage({
+    brew: function(){
+        console.log('用沸水浸泡茶叶');
+    },
+    pourInCup: function(){
+        console.log('把茶倒进杯子');
+    },
+    addCondiments: function(){
+        console.log('加柠檬');
+    }
+})
+
+var coffee = new Coffee()
+coffee.init()
+
+var tea = new Tea()
+tea.init()
+
+//把brew、pourInCup、addCondiments依次传入Beverage函数中，Beverage函数被调用之后返回构造器F。F中包含模板方法 F.prototype.init，跟继承得到的结果一样，该模板方法封装了子类的算法结构。
+
+//在js中，基于继承的应用场景其实并不多，因为有更好的选择，使用高阶函数的写法会更为优雅。
+```

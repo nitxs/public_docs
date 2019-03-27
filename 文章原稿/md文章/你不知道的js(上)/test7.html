@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// var obj = {
+//     a: 2
+// }
+// console.log(Object.getOwnPropertyDescriptor(obj, 'a'));
+// var newObj = {};
+// Object.defineProperty(newObj, 'a', {
+//     value: 10,
+//     writable: true,
+//     enumerable: true,
+//     configurable: true
+// })
+// console.log(newObj.a);
+
+// var obj = {
+//     //给a定义一个getter
+//     get a(){
+//         return 3;
+//     }
+// }
+
+// Object.defineProperty(obj, 'b', {
+//     //给b设置一个getter
+//     get: function(){return this.a*2;},
+//     //确保b会出现对象的属性列表中
+//     enmuerable: true
+// })
+
+// console.log( obj.a );
+// console.log( obj.b );
+
+// var obj = {
+//     get a(){
+//         return this.res;
+//     },
+//     set a(val){
+//         this.res = val;
+//     }
+// }
+// obj.a = 10;
+// console.log( obj.a );   // 10
+
+// obj.a = 5;
+// console.log( obj.a );   // 5
+
+// var obj = {a:2};
+// console.log(obj.hasOwnProperty('a'));
+
+var emptyObj = Object.create(null);
+emptyObj.a = 11;
+console.log('hasOwnProperty' in emptyObj);      // true emptyObj对象无法访问hasOwnProperty方法
+
+console.log(Object.prototype.hasOwnProperty.call(emptyObj, 'a'));   // true
+
+</script>
+</html>

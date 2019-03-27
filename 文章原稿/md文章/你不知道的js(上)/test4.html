@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// var a = 2;
+// function fn(){
+//     'use strict';
+//     console.log("fn");
+//     console.log(this.a);
+//     var b = 10;
+//     foo();
+// }
+// function foo(){
+//     console.log("foo");
+//     console.log(this.b);
+//     bar();
+// }
+// function bar(){
+//     console.log("bar");
+// }
+// fn();
+
+// function fn(){
+//     console.log(this.a);
+// }
+// var a = 2;
+
+// (function(){
+//     'use strict';
+//     fn();
+// })()
+// function fn(){
+//     console.log(this.a);
+// }
+// var obj = {
+//     a: 2,
+//     fn: fn
+// }
+// var bar = obj.fn;
+// var a = 1;
+// bar();
+
+// function foo(){
+//     "use strict";
+//     console.log(this.a);    // 
+// }
+// foo();
+
+// function fn(){
+//     console.log(this.a);
+// }
+// var obj = {
+//     a: 2,
+//     fn: fn
+// }
+// var a = 1;
+// obj.fn();
+
+// function fn(){
+//     console.log(this.a);
+// }
+// var obj = {
+//     a: 2,
+//     fn: fn
+// }
+// var a = 1;
+// var foo = obj.fn;
+// foo();
+
+// function fn(){
+//     console.log(this.a);
+// }
+// function bar(foo){
+//     foo();  //回调函数，高能预警 !!!
+// }
+// var obj = {
+//     a: 2,
+//     fn: fn
+// }
+// var a = 1;
+// bar( obj.fn );  // 1
+
+// function fn(){
+//     console.log(this.a);
+// }
+// var obj = {
+//     a: 2,
+//     fn: fn
+// }
+// var a = 1;
+// setTimeout(obj.fn, 1000)
+
+// function fn(){
+//     console.log(this.a);
+// }
+// var obj = {
+//     a: 20
+// }
+// fn.call(obj);       // 20
+// function fn(){
+//     console.log(this.a);
+// }
+// function bar(){
+//     fn.call(obj)
+// }
+// var obj = {
+//     a: 2
+// }
+// bar();
+// setTimeout(bar, 1000);
+// bar.call(window);   // 2
+// function fn(something){
+//     console.log(this.a, something);
+//     return this.a + something;
+// }
+// function bar(){
+//     return fn.apply(obj, arguments);
+// }
+// var obj = {
+//     a: 2
+// }
+// console.log(bar(4)); 
+
+// function bind(fn, obj){
+//     return function(){
+//         return fn.apply(obj, arguments);
+//     }
+// }
+
+// function fn(something){
+//     console.log(this.a, something);     // 2 5
+//     return this.a + something;
+// }
+// var obj = {a: 2};
+// var bar = bind(fn, obj);
+// var res = bar(5);
+// console.log(res);
+
+// function fn(something){
+//     console.log(this.a, something);     // 2 6
+//     return this.a + something;
+// }
+// var obj = {a: 2};
+// var bar = fn.bind(obj);
+// var res = bar(6);
+// console.log(res);       // 8
+
+// function fn(){
+//     console.log(this.a);
+// }
+// function bar(foo){
+//     foo.call(obj)
+// }
+// var obj = {
+//     a: 20
+// }
+// bar(fn);
+
+// function fn(val){
+//     return this.a + val;
+// }
+// function foo(){
+    
+// }
+
+// function fn(){
+//     console.log(this.a);
+// }
+// var obj1 = {
+//     a: 2,
+//     fn: fn
+// }
+// var obj2 = {
+//     a: 4,
+//     fn: fn
+// }
+// obj1.fn();   // 2
+// obj2.fn();   // 4
+
+// obj1.fn.call(obj2);     // 4
+// obj2.fn.call(obj1);     // 2
+
+// function fn(something){
+//     this.a = something;
+// }
+// var obj1 = {
+//     fn: fn
+// }
+// var obj2 = {};
+// obj1.fn(2);
+// console.log(obj1.a);    // 2  此时是隐式绑定，将this指向obj1对象，this.a操作就是在obj1对象上添加属性a，其值为fn函数传入的参数 2
+
+// obj1.fn.call(obj2, 3);      // 3 此时是显式绑定，通过call方法将fn中this绑定到obj2对象上去，并且传入参数 3 来给obj2中属性a赋值 ，这里也再次印证 显式绑定优先级 高于 隐式绑定
+// console.log(obj2.a);
+
+// var bar = new obj1.fn(4);       // 对obj1.fn函数执行构造调用，返回一个新对象，obj1.fn函数中的this就指向这个新对象，并且构造调用时传入的参数 4 被赋值给了新对象的属性 a 
+// console.log(obj1.a);        // 2
+// console.log(bar.a);         // 4
+
+function fn(something){
+    this.a = something;
+}
+var obj1 = {};
+var bar = fn.bind(obj1);
+bar(2);
+console.log(obj1.a);    // 2
+
+var baz = new bar(4);
+console.log(obj1.a);     // 2
+console.log(baz.a);     // 4
+
+</script>
+</html>

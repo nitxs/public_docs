@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+var strPrimitive = "I am a string.";
+console.log(typeof strPrimitive);    // string
+console.log(strPrimitive instanceof String);     // false
+
+var strObject = new String("I am a string.");
+console.log(typeof strObject);      // Object
+console.log(strObject instanceof String);       // true
+console.log(Object.prototype.toString.call(strObject));  // [object String]
+</script>
+</html>

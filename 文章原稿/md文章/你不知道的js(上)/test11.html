@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="../jquery.js"></script>
+</head>
+<body>
+    
+</body>
+<script>
+// 原型面向对象ES5
+// // 父类
+// function Widget(width, height){
+//     this.width = width || 50;
+//     this.height = height || 50;
+//     this.$elem = null;
+// }
+// Widget.prototype.render = function($where){
+//     if(this.$elem){
+//         this.$elem.css({
+//             width: this.width,
+//             height: this.height
+//         }).appendTo($where);
+//     }
+// }
+
+// // 子类
+// function Button(width, height, label){
+//     Widget.call(this, width, height);
+//     this.label = label || "Default";
+//     this.$elem = $("<button>").text(this.label);
+// }
+// //通过[[Propertype]]关联到父类
+// Button.prototype = Object.create(Widget.prototype);
+// Button.prototype.render = function($where){
+//     Widget.prototype.render.call(this, $where);
+//     this.$elem.click( this.onclick.bind(this) );
+// }
+// Button.prototype.onclick = function(event){
+//     console.log("Button "+ this.label + " clicked.");
+// }
+
+// var $body = $(document.body);
+// var btn1 = new Button(40, 50, "btn1");
+// var btn2 = new Button(60, 80, "btn2");
+
+// btn1.render($body); 
+// btn2.render($body);
+
+// ES6 class语法糖
+// // 父类
+// class Widget{
+//     constructor(width, height){
+//         this.width = width || 50;
+//         this.height = height || 50;
+//         this.$elem = null;
+//     }
+
+//     render($where){
+//         if(this.$elem){
+//             this.$elem.css({
+//                 width: this.width,
+//                 height: this.height
+//             }).appendTo($where)
+//         }
+//     }
+// }
+
+// // 子类  继承父类
+// class Button extends Widget{
+//     constructor(width, height, label){
+//         super(width, height);
+//         this.label = label || "Default";
+//         this.$elem = $("<button>").text(this.label);
+//     }
+
+//     render($where){
+//         super.render($where);
+//         this.$elem.click( this.onClick.bind(this) )
+//     }
+
+//     onClick(event){
+//         console.log(`Button ${this.label} clicked.`);
+//     }
+// }
+
+// // 实例化
+// var $body = $(document.body);
+// var btn1 = new Button(40, 50, "btn1");
+// var btn2 = new Button(50, 100, "btn2");
+
+// btn1.render($body);
+// btn2.render($body);
+
+// 对象关联委托
+var Widget = {
+    init: function(width, height){
+        this.width = width || 50;
+        this.height = height || 50;
+        this.$elem = null;
+    },
+    render: function($where){
+        if(this.$elem){
+            this.$elem.css({
+                width: this.width + "px",
+                height: this.height + "px",
+            }).appendTo($where)
+        }
+    }
+}
+
+
+var Button = Object.create(Widget);
+Button.setup = function(width, height, label){
+    //委托调用
+    this.init(width, height);
+    this.label = label || "Default";
+    this.$elem = $("<button>").text(this.label)
+}
+Button.build = function($where){
+    this.render($where);
+    this.$elem.click( this.onClick.bind(this) );  
+}
+Button.onClick = function(event){
+    console.log(`Button ${this.label} clicked.`);
+}
+
+var $body = $(document.body);
+var b1 = Object.create(Button);
+var b2 = Object.create(Button);
+
+b1.setup(40, 50, "btn1");
+b2.setup(60, 80, "btn2");
+
+b1.build($body);
+b2.build($body);
+
+
+</script>
+</html>

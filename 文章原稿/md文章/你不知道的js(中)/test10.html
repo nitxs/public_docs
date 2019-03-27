@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// function *createIterator(item) {
+//     for(let i=0; i<item.length; i++){
+//         yield item[i];
+//     }
+// }
+
+// var it = createIterator([10, 2, 4, 5, 6]);  // 生成器函数执行返回一个新的迭代器实例it
+// // 调用迭代器it的next()方法
+// console.log(it.next());   // {value: 10, done: false}
+// console.log(it.next());   // {value: 2, done: false}
+// console.log(it.next());   // {value: 4, done: false}
+// console.log(it.next());   // {value: 5, done: false}
+// console.log(it.next());   // {value: 6, done: false}
+// console.log(it.next());   // {value: undefined, done: true}
+
+// // 或者使用迭代器统一遍历器 for...of 
+// for(var v of it){
+//     console.log(v);     // 10  2  4  5  6
+// }
+
+// var arr = [10, 2, 3, 5];    // 数组是个可迭代对象
+
+// var it = arr[Symbol.iterator]();    // 调用可迭代对象的Symbol.iterator方法可以获取默认迭代器，将迭代器引用赋给it变量
+// console.log(it.next());     // {value: 10, done: false}
+// console.log(it.next());     // {value: 2, done: false}
+// console.log(it.next());     // {value: 3, done: false}
+// console.log(it.next());     // {value: 5, done: false}
+// console.log(it.next());     // {value: undefined, done: true}
+
+// function isIterator(obj) {
+//     // return typeof obj[Symbol.iterator] === "function";
+//     return Object.prototype.toString.call( obj[Symbol.iterator] ) === "[object Function]"
+// }
+// console.log(isIterator([10, 2, 3, 4, 5]));      // true
+// console.log(isIterator(new Set()));             // true
+// console.log(isIterator(new Map()));             // true
+// console.log(isIterator("abc"));                 // true
+
+// 生成器
+// function *createIterator() {
+//     var first = yield 2;
+//     var second = yield first * 3;
+//     yield second + 3;
+// }
+
+// // 创建迭代器实例
+// var it = createIterator();
+
+// // 启动迭代器
+// it.next();      // {value: 2, done: false}
+// it.next(4);     // {value: 12, done: false}
+// it.next(7);     // {value: 10, done: false}
+// console.log(it.next());     // {value: undefined, done: true}
+
+
+
+
+</script>
+</html>

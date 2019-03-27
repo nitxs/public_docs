@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+function createIterator(item){
+    var i = 0;
+
+    return {    // 返回一个迭代器对象
+        [Symbol.iterator]: function () { return this; },
+        next: function () {  //迭代器对象一定有next()方法
+            var done = ( i >= item.length );
+            var value = !done ? item[i++] : undefined;
+
+            return {    //next()方法返回结果对象
+                value: value,
+                done: done
+            }
+        }
+    }
+}
+
+var it = createIterator([10, 2, 3, 4, 5]);
+// console.log(it.next().value);       // 10
+// console.log(it.next().value);       // 2
+// console.log(it.next().value);       // 3
+// console.log(it.next().value);       // 4
+// console.log(it.next().value);       // 5
+// console.log(it.next().value);       // undefined
+
+// while(!it.next().done){
+//     console.log(it.next().value);
+// }
+
+for(var v of it){
+    console.log(v);
+}
+
+// var arr = [10, 2, 3, 4, 5];
+// var it = arr[Symbol.iterator]();
+// console.log(it.next().value);       // 10 
+// console.log(it.next().value);       // 2
+// console.log(it.next().value);       // 3
+
+</script>
+</html>

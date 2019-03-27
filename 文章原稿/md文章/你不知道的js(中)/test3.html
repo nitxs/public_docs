@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// // promise对象的鸭子类型判断
+// function promiseDuckCheck(p) {
+//     if( p!=null && ( typeof p === "object" || typeof p === "function" ) && typeof p.then === "function" ){
+//         return true
+//     }else {
+//         return false;
+//     }
+// }
+
+// var p = new Promise(function (resolve, reject) {});
+// var o = {
+//     then: function () {  }
+// }
+// //让c对象的[[Prototype]]链到o对象
+// var c = Object.create(o);
+
+// console.log(typeof p);
+// console.log(promiseDuckCheck(p));
+// console.log(promiseDuckCheck(o));
+// console.log(promiseDuckCheck(c));
+
+// function add(x) {
+//     return new Promise(function (resolve, reject) {
+//         if(x > 10){
+//             resolve([5, 9 , 7]);
+//         }else {
+//             reject("msg", 235, 99);
+//         }
+//     })
+// }
+
+// add(12)
+// .then(function (val) {
+//     console.log(val);
+// })
+// .catch(function (err) {
+//     console.log(err);
+// })
+
+// function sum() {
+//     return new Promise(function (resolve, reject) {
+//         foo.bar();
+//         resolve(20);
+//     })
+// }
+
+// sum()
+// .then(
+//     function (val) {
+//         console.log(val);
+//     }
+// )
+// .catch(err=>{
+//     throw new Error(err)
+// })
+
+function delay(timer){
+    return new Promise(function(resolve, reject){
+        setTimeout( resolve, timer );
+    })
+}
+
+delay(100)
+.then(function setp2(val) {
+    console.log("setp2 after 100ms");
+    return delay(200);
+})
+.then(function setp3() {
+    console.log("setp3 after another 200ms");
+})
+.then(function setp4() {
+    console.log("setp4 next job");
+    delay(50);
+})
+.then(function setp5() {
+    console.log("setp5 after another 50ms");
+})
+
+
+</script>
+</html>

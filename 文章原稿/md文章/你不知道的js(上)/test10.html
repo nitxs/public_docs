@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// function Foo(name){
+//     this.name = name;
+// }
+// Foo.prototype.identify = function(){
+//     return "I am " + this.name;
+// }
+// function Bar(who){
+//     Foo.call(this, who);
+// }
+// Bar.prototype = Object.create(Foo.prototype);
+// Bar.prototype.speak = function(){
+//     console.log("Hello, everyone. " + this.identify() + ". Nice to meet you.");
+// }
+
+// var b1 = new Bar("b1");
+// var b2 = new Bar("b2");
+
+// b1.speak();
+// b2.speak();
+
+var Foo = {
+    init: function(name){
+        this.name = name;
+    },
+    identify: function(){
+        return "I am " + this.name;
+    }
+}
+var Bar = Object.create(Foo);
+Bar.speak = function(){
+    console.log("Hello, everyone. " + this.identify() + ". Nice to meet you.")
+}
+var b1 = Object.create(Bar);
+b1.init( "nitx" );
+var b2 = Object.create(Bar);
+b2.init("sxm");
+
+b1.speak();
+b2.speak();
+</script>
+</html>

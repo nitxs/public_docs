@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// console.log(typeof undefined === "undefined");   // true
+// console.log(typeof 42 === "number");             // true
+// console.log(typeof "abc42" === "string");        // true
+// console.log(typeof true === "boolean");          // true
+// console.log(typeof {name: "nitx"} === "object"); // true
+// console.log(typeof Symbol() === "symbol");       // teue
+
+// //注意，null和它的字符串值并不对应
+// console.log(typeof null === "object");           // true
+
+// function foo(){
+//     var arr = Array.prototype.slice.call(arguments);
+//     arr.push("bar");
+//     console.log(arr);
+// }
+// foo("baz", "fn");
+
+// var a = "nitx";
+// var c = a.toUpperCase();
+// a === c;        //  fasle
+// console.log(a);
+// console.log(c); 
+
+// var a = "nitx";
+// console.log(a.join);    // undefined
+// console.log(a.map);     // undefined
+// var c = Array.prototype.join.call(a, "-");
+// var d = Array.prototype.map.call(a, function(v){
+//     return v.toUpperCase() + ".";
+// }).join("");
+// console.log(c);     // n-i-t-x
+// console.log(d);     // N.I.T.X.
+
+// var a = "ni*a*tx";
+// var c = a.split("").reverse().join("");
+// console.log(c);     // xtin
+
+// var a = 68.9527;
+// console.log(a.toFixed(0));      // 69
+// console.log(a.toFixed(1));      // 69.0
+// console.log(a.toFixed(2));      // 68.95
+// console.log(a.toFixed(3));      // 68.953
+// console.log(a.toFixed(4));      // 68.9527
+// console.log(a.toFixed(5));      // 68.95270
+
+// console.log(Number.MAX_SAFE_INTEGER);
+// console.log(Number.MIN_SAFE_INTEGER);
+
+// console.log(Number.isInteger(59));      // true
+// console.log(Number.isInteger(59.0));    // true
+// console.log(Number.isInteger(59.2));    // false
+
+// var isInteger = function(num){
+//     return typeof num === "number" && num % 1 === 0;
+// }
+// console.log(isInteger(10));     // true
+// console.log(isInteger(11.0));   // true
+// console.log(isInteger(11.5));   // false
+
+// var s = new String("abc");
+// console.log(s);         // String {"abc"}
+// console.log(typeof s);  // object
+// console.log(Object.prototype.toString.call(s));  
+
+// console.log(Object.prototype.toString.call([1, 2, 3]));      // 
+// console.log(Object.prototype.toString.call(/[0-9]{1,2}/));
+
+// console.log(Object.prototype.toString.call(42));        // [object Number]
+// console.log(Object.prototype.toString.call("abc"));     // [object String]
+// console.log(Object.prototype.toString.call(true));      // [object Boolean]
+
+// var a = new String("abc");
+// var b = new Number(42);
+// var c = new Boolean(true);
+
+// console.log(a.valueOf());       // abc
+// console.log(b.valueOf());       // 42
+// console.log(c.valueOf());       // true
+
+function foo(x){
+    if(!x){
+        throw new Error("x is not defined.");
+    }
+}
+foo();
+</script>
+</html>

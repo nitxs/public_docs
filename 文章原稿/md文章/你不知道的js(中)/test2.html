@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+function add(xPromise, yPromise) {
+    // Promise.call([..])接收一个promise数组并返回一个新的promise
+    // 这个返回的新promise等待数组中的所有promise完成
+    return Promise.all([xPromise, yPromise])
+}
+
+var xPromise = function () {
+    return new Promise(function (resolve, reject) {
+                var str = "hello";
+                setTimeout(function () {
+                    if(str){
+                        resolve(str);
+                    }else {
+                        reject("str is undefined.");
+                    }
+                }, 1000)
+            })
+            .then(function (res) {
+                return res;
+            })
+            .catch(function (err) {
+                console.log(err);
+            })
+}
+
+var yPromise = function () {
+    return new Promise(function (resolve, reject) {
+                var str = "world";
+                setTimeout(function () {
+                    if(str){
+                        resolve(str);
+                    }else {
+                        reject("str is undefined.");
+                    }
+                }, 2000)
+            })
+            .then(function (res) {
+                return res;
+            })
+            .catch(function (err) {
+                console.log(err);
+            })
+}
+
+// xPromise()和yPromise()返回相应值的promise，可能已经就绪，也可能以后就绪
+add( xPromise(), yPromise() )
+// add函数返回的promise决议后，取得收到的x值和y值加在一起
+.then(function (valArr) {
+    console.log(valArr);
+    return valArr[0] + " " + valArr[1];
+})
+// 得到一个两个数组的和的promise，继续链式调用then()来等待返回新的promise
+.then(function (sum) {
+    console.log(sum);
+})
+
+</script>
+</html>

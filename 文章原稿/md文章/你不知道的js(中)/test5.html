@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <a href="javascript:;" id="btnA">点击</a>
+</body>
+<script>
+// function get(res) {
+//     return new Promise(function (resolve, reject) {
+//                 setTimeout(function () {
+//                     resolve( (3*res) - 1 );
+//                 }, 1000)
+//             })
+// }
+
+// function foo(x, y) {
+//     var res = x * y;
+
+//     return  [
+//         Promise.resolve(res),
+//         get(res)
+//     ]
+// }
+
+// Promise.all( foo(10, 20) )
+// .then(function (val) {
+//     var a = val[0];
+//     var b = val[1];
+
+//     console.log(a, b);
+// })
+
+var btnA = document.getElementById("btnA");
+btnA.onclick = function (event) {
+    console.log(event.target.id);
+}
+
+</script>
+</html>

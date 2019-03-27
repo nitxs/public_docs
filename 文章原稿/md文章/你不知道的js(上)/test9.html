@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script>
+// var obj = {
+//     a: 2
+// }
+// console.log(obj.a);     // 2
+// var newObj = Object.create(obj);
+// console.log(newObj.a);  // 2
+
+// var parentObj = {foo: 10};
+// var obj = Object.create(parentObj);
+// obj.foo = 5;
+// console.log(obj.foo);       // 5
+// "use strict"
+// var parentObj = {};
+// Object.defineProperty(parentObj, "foo", {
+//     value: 10,
+//     writable: false
+// });
+// var obj = Object.create(parentObj);
+// obj.foo = 5;
+// console.log(obj.foo);   
+
+// var parentObj = {
+//     get foo(){
+//         return this.res;
+//     },
+//     set foo(val){
+//         this.res = val * 4;
+//     }
+// }
+// parentObj.foo = 10;
+// console.log(parentObj.foo); 
+
+// var obj = Object.create(parentObj);
+// obj.foo = 3;
+// console.log(obj.foo);   
+// console.log(obj.hasOwnProperty("foo")); 
+
+// var parentObj = {};
+// Object.defineProperty(parentObj, "foo", {
+//     value: 10,
+//     writable: false
+// });
+// var obj = Object.create(parentObj);
+// Object.defineProperty(obj, "foo", {
+//     value: 5,
+//     writable: false
+// })
+// console.log(obj.foo);
+
+// var parentObj = {
+//     get foo(){
+//         return this.res;
+//     },
+//     set foo(val){
+//         this.res = val * 4;
+//     }
+// }
+// parentObj.foo = 10;
+// console.log(parentObj.foo);     // 40
+
+// var obj = Object.create(parentObj);
+// Object.defineProperty(obj, "foo", {
+//     value: 7
+// })
+// console.log(obj.foo);   // 7
+
+// function Foo(){}
+// var obj = new Foo();
+// console.log(Object.getPrototypeOf(obj) === Foo.prototype);    // true
+// function Foo(){};
+// var obj = new Foo();
+// console.log(Object.getPrototypeOf(obj) === Foo.prototype);  // true
+// console.log(obj.constructor);                        // Foo
+// console.log(obj.hasOwnProperty("constructor"));     // fakse
+// console.log(Foo.prototype.constructor);             // Foo
+// console.log(Foo.prototype.hasOwnProperty("constructor"));       // true
+
+// function Foo(){};
+// Foo.prototype = {a:10};
+// var obj = new Foo();
+// console.log(obj.constructor === Foo);    // 此时还是 true么??????
+// console.log(obj.constructor);
+// console.log(obj.constructor === Object);
+
+// function Foo(){};
+// Foo.prototype = {a: 10};
+// var obj = new Foo();
+// console.log(obj.constructor === Object);     // true
+// Object.defineProperty(Foo.prototype, "constructor", {
+//     value: Foo,
+//     writable: true,
+//     enumerable: false,
+//     configurable: true
+// })
+// console.log(obj.constructor === Foo);       // true
+
+function Foo(name){
+    this.name = name;
+}
+Foo.prototype.showName = function(){
+    console.log(this.name);
+}
+function Bar(name, age){
+    Foo.call(this, name);
+    this.age = age;
+}
+Bar.prototype = Object.create(Foo.prototype);
+Bar.prototype.showAge = function(){
+    console.log(this.age);
+}
+var b = new Bar("nitx", 30);
+b.showName();       // nitx
+b.showAge();        // 30
+</script>
+</html>
