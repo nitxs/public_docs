@@ -1,0 +1,353 @@
+灵活掌握函数式编程，异步编程就有了得心应手的基础。之所以说是基础，是还需要对**异步**的编程思路有清晰的认识。
+
+为照顾开发者的阅读思维习惯，同步I/O曾盛行多年。但随着技术快速发展，性能瓶颈问题已无法回避。虽然性能提升可以用多线程方式解决，但多线程的引入对业务逻辑造成的麻烦也不小。Node利用异步非阻塞I/O并通过事件循环触发异步回调的机制，将异步提升到业务层面，已被证明是一种新的有效的性能提升思路。
+
+Node借助异步模型、V8高性能，突破单线程的性能瓶颈，让js在后端达到实用价值。同时也统一了前后端的js的编程模型。
+
+所以要想用好Node，啃下异步编程势在必行。
+
+异步编程的难点在于几点：异常处理、函数嵌套过深、阻塞代码、多线程编程、异步转同步。(这里我不展开描述，因为我的理解也不深，后期有理解再写吧。先记下这几点，开发过程中遇到问题时注意对照一下，以便提示问题该往哪方面解决。)
+
+《深入浅出Node.js》书中异步编程的解决方案主要有三种：事件发布-订阅模式、Promise/Deferred模式、流程控制库。但由于成书较早，后两个解决方案有些过时或有更好的解决方案，其中Promise/Deferred模式可以用ES6的Promise替换，更新的还有生成器迭代器和ES7中的async/await，流程控制库使用较偏所以不做讨论。
+
+下面将重点研究目前比较成熟的异步编程解决方案：**事件发布-订阅模式**、**ES6的Promise**、**生成器迭代器**、**ES7的async/await**。
+
+这四个解决方案我将分成四篇来写，毕竟每个解决方案里面都有很多可以深挖的东西，希望能写的尽可能全面，让你看了清晰明了，然后把代码拖走直接即用。
+
+所谓"异步"，简单说就是一个任务不是连续完成的，可以理解成该任务被人为分成两段，先执行第一段，然后转而执行其他任务，等做好了准备，再回过头执行第二段。
+
+比如，有一个任务是读取文件进行处理，任务的第一段是向操作系统发出请求，要求读取文件。然后，程序执行其他任务，等到操作系统返回文件，再接着执行任务的第二段（处理文件）。这种不连续的执行，就叫做异步。
+
+相应地，连续的执行就叫做同步。由于是连续执行，不能插入其他任务，所以操作系统从硬盘读取文件的这段时间，程序只能干等着。
+
+其实最初js语言对异步的解决方案就是回调函数，所谓回调函数，就是把任务的第二段单独写在一个函数里面，等到重新执行这个任务的时候，就直接调用这个函数。回调函数的英语名字callback，直译过来就是"重新调用"。日常使用是最常见的，所以就不多介绍了。
+
+#### 事件发布-订阅模式
+首先看事件发布-订阅模式，事件发布-订阅模式也叫观察者模式或者事件监听器模式，是一种广泛用于异步编程的设计模式，是回调函数的事件化。它的简单实现代码在**《深入浅出Node.js》：Node的异步I/O流程原理解析**一文中的观察者小节有，有需要的可以看下。
+
+Node自身提供的events模块就是发布-订阅模式的实现，Node中大部分模块都继承自events类，比如常见的http、fs、stream。它具有`addListener/on()`、`once()`、`removeListener()`、`removeAllListeners()`、`emit()`等基本的事件监听模式的方法实现。代码示例如下：
+```javascript
+// 获取核心模块events
+const events = require( "events" );
+
+// 实例化events.EventEmitter类，生成emitter对象实例
+const emitter = new events.EventEmitter();
+
+// 订阅 event1命名事件，并给出当触发此命名事件时执行的回调函数
+// 订阅回调函数执行同步模式
+emitter.on("event1", function ( msg ) {
+    // 命名事件对应的回调函数
+    callbackFun.call( this, msg );
+})
+
+// 订阅 event2命名事件，并给出当触发此命名事件时执行的回调函数
+// 订阅回调函数执行异步模式
+emitter.on("event2", function ( msg ) {
+    // 命名事件对应的回调函数
+    let _this = this;
+    process.nextTick( function () {
+        callbackFun.call( _this, msg );
+    } )
+})
+
+// 如果没有为 error 事件注册监听器(注册回调函数)，则当 error 事件触发时，会抛出错误、打印堆栈跟踪，并退出Nodejs进程。
+// 作为最佳实践，应始终为 error 事件注册监听器
+emitter.on( "error", function (err) {
+    console.error( "错误信息为" + err );
+} )
+
+// 触发 event1命名事件，向对应的回调函数传入实参，这里实参是字符串 "sync emitter is emitted."
+emitter.emit("event1", "sync emitter is emitted.");
+// 触发 event2命名事件，向对应的回调函数传入实参，这里实参是字符串 "async emitter is emitted."
+emitter.emit("event2", "async emitter is emitted.");
+
+// 封装命名事件的回调函数执行部分，代码粒度更细，易于管理和复用
+function callbackFun( data ) {
+    console.log( data );
+    // console.log( this );
+    console.log( this === emitter );
+}
+
+// 打印结果：
+// sync emitter is emitted.
+// true
+// async emitter is emitted.
+// true
+```
+可以看到，订阅事件就是一个典型的高阶函数的应用。事件发布-订阅模式可以实现一个事件与多个回调函数的关联，这些回调函数又称事件监听器。通过`emit()`触发事件后，消息就会立即传递给当前事件的所有监听器执行。监听器可以很灵活的添加和删除，使得事件和具体处理逻辑之间很轻松的关联与解耦。
+
+事件发布-订阅模式自身没有同步和异步调用的问题。但在Node中，`emit()`调用在多数情况下都是伴随事件循环异步触发的，所以才说事件订阅-发布广泛应用于异步编程。在上例中，命名事件`event2`的回调函数(监听器)就是执行的异步操作，在下一个事件循环节点才执行，这样做还利于捕捉错误。而同步执行模式时则无法捕捉错误。通常使用异步执行模式是更好的选择。
+
+事件发布-订阅模式常常用来解耦业务逻辑，事件发布者无需关注订阅的命名事件的回调函数(监听器)如何实现业务逻辑，甚至不用关注有多少个监听器，数据可以通过消息的方式灵活传递。
+
+在一些典型的场景中，可以通过事件发布-订阅模式进行组件封装，将不变的部分封装在组件内部，将容易变化、需自定义的部分通过事件暴露给外部处理，就是一种典型的逻辑分离方式。这里面事件的设计非常重要，它关乎外部调用组件时是否优雅，从某种角度来说事件的设计就是组件的接口设计。
+
+从另外一个角度看，事件的监听器模式也是一种钩子(hook)机制，利用钩子导出内部数据或状态给外部的调用者。Node中的很多对象都具有黑盒特点，功能点少，如果不通过事件钩子的形式，无法获取对象在运行其间的中间值和内部状态。这种通过事件钩子的方式，可以使开发者不用关注组件是如何启动和执行的，只需关注在需要的事件点上即可。Node中的HTTP请求就是典型场景：
+```javascript
+var http = require( "http" );
+
+var options = {
+    host: "www.baidu.com",
+    port: 80,
+    path: "/",
+    method: "POST"
+};
+
+var req = http.request( options, function (res) {
+    console.log( "Status： " + res.statusCode );
+    console.log( "Headers: " + JSON.stringify( res.headers ) );
+    res.setEncoding( "utf8" );
+    res.on( "data", function ( chunk ) {
+        console.log( "Body: " + chunk );
+    } );
+    res.on( "end", function () {
+        
+    } );
+} );
+
+req.on( "error", function ( err ) {
+    console.log( "errMsg is " + err );
+    // console.log( err );
+} );
+console.log(455);
+
+req.write( "data\n" );
+req.write( "data\n" );
+req.end();
+```
+在这段HTTP请求代码中，开发者只要关注`error`、`data`、`end`这些业务事件点上，至于内部流程，无需关注。
+
+Node对事件发布-订阅模式机制做一些健壮性处理：
+- 如果对一个命名事件添加了超过10个监听器(事件回调)，将会得到一条警告。这个设计与Node自身单线程有关，监听器太多可能会导致内存泄露。此外当事件触发时可能会引起一系列监听器执行，如果监听器过多可能会存在过多占用CPU的情况。可以调用`emitter.setMaxListeners(0)`来去掉这个限制，或者设更大的警告阈值。
+- 为处理异常，EventEmitter对象对error事件进行了特殊对待。如果运行其间的错误触发了error事件，EventEmitter会检查是否有对error事件添加过监听器。如果添加了，这个错误将将由该监听器处理，否则这个错误会作为异常抛出。如果外部没有捕获这个异常，将会引起线程退出。一个健壮的EventEmitter实例应该对error事件做处理。
+
+1.Node中可以手动继承events类，使开发者自定义的类也具有事件发布-订阅功能
+```javascript
+const util = require( "util" );
+const events = require( "events" );
+
+function MyStream(){
+    events.EventEmitter.call( this );
+}
+util.inherits( MyStream, events.EventEmitter );
+
+MyStream.prototype.write = function ( data ) {
+    this.emit( "data", data )
+}
+
+var myStream = new MyStream();
+
+myStream.on( "data", function ( msg ) {
+    process.nextTick( function () {
+        console.log( `接收的数据：${msg}` );
+    } )
+} )
+myStream.write( 190 );
+
+// 打印：
+// 接收的数据：190
+```
+但在最新Node API中官方不建议使用`util.inherits()`，推荐使用ES6的 class 和 extends 关键词来获得js语言层面的继承支持。并且这两种方式是语义上不兼容的。
+
+下面是使用ES6的 class 和 extends：
+```javascript
+const events = require( "events" );
+
+class MyStream extends events.EventEmitter {
+    write( data ){
+        this.emit( "data", data );
+    }
+}
+
+var myStream = new MyStream();
+myStream.on( "data", function( msg ){
+    process.nextTick( function () {
+        console.log( `接收的数据是：${msg}` );
+    } )
+} )
+
+myStream.write( "写入消息，触发data事件。" );
+
+// 打印结果：
+// 接收的数据是：写入消息，触发data事件。
+```
+开发者可以通过上述两种(推荐使用class和extends)来轻松继承events类来利用事件机制解决业务问题。
+
+2.利用事件队列解决雪崩问题
+在事件发布-订阅模式中，除了`on()`方法还有一个`once()`方法，通过它添加的监听器只能执行一次，在执行之后就会将它与事件的关联移除。这个特性常常可以帮助开发者过滤一些重复性的事件响应。利用`once()`方法就可以解决雪崩问题。
+
+在计算机中缓存由于存放在内存中，访问速度非常快，常用于加速数据访问，让绝大多数的请求不必重复去做一些低效的数据读取。所谓**雪崩问题，就是在高访问量、大并发量的情况下缓存失效的问题**，此时大量的请求同时涌入数据库中，数据库无法同时承受如此大的查询请求，进而往前影响到网站整体的响应速度。
+
+以下是一条数据库查询语句：
+```javascript
+var select = function( callback ){
+    db.select( "SQL", function( results ){
+        callback( results );
+    } )
+}
+```
+如果站点刚好启动，这里缓存中是不存在数据的，而如果访问量巨大，同一句SQL会被发送到数据库中反复查询，会影响到服务的整体性能。此时就可以引入事件队列：
+```javascript
+const events = require( "events" );
+let emitter = new events.EventEmitter();
+
+var status = "ready";
+var select = function ( callback ) {
+    emitter.once( "selected", callback );
+    if( status === "ready" ){
+        status = "pending";
+        db.select( "SQL", function ( results ) {
+            emitter.emit( "selected", results );
+            status = "ready";
+        } );
+    }
+};
+```
+可以将上例中`db.select(...)`换成自执行函数配合定时器来模拟短时间大并发的场景，测试代码是否有效：
+```javascript
+const events = require( "events" );
+let emitter = new events.EventEmitter();
+
+var status = "ready";
+var i = 0;  // 定义测试用的全局变量i
+var select = function ( callback ) {
+    emitter.once( "selected", callback );
+    if( status === "ready" ){
+        status = "pending";
+        ( function autoExe( results ) {
+            emitter.emit( "selected", results );
+            status = "ready";
+        } )( 10 )
+    }
+};
+
+// 单独定义监听器函数
+function callback ( data ) {
+    i++;
+    console.log( data*2 + "/" + i );
+}
+
+setInterval(() => {
+    select( callback );
+}, 1); // 这里特意将间隔时间压缩到 1ms
+```
+这里就是利用`once()`方法将所有请求都压入事件队列中，利用其执行一次就会移除监听器的特点，保证每一个监听器(回调函数)只会被执行一次。对于相同的SQL语句，保证在同一个查询开始到结束的过程中永远只有一次。SQL在进行查询时，新到来的相同调用只需在队列中等待数据即可，一旦查询结束，得到的结果可以被这些调用共同使用。这种方式能节省重复的数据库调用产生的开销。由于Node单线程执行的原因，此处无须担心状态同步的问题。这种方式也可以应用到其他远程调用的场景中，即使外部没有缓存策略，也能有效节省重复开销。
+
+3.多异步之间的协作方案
+事件发布-订阅模式利用高阶函数优势，监听器作为回调函数可以随意添加和删除，它帮助开发者轻松处理随时可能添加的业务逻辑。也可以隔离精力逻辑，保持业务逻辑单元的职责单一。通常命名事件与监听器的关系是一对多，但在异步编程中，也有可能会出现命名事件与监听器的关系是多对一的情况，也就是说一个业务逻辑可能依赖两个甚至更多个需要通过回调或事件传递的结果。这也是导致回调嵌套过深的原因。
+
+通过原生js来解决为了最终结果的处理而导致可以并行调用但实际只能串行执行的问题。目的是既要享受异步I/O带来的性能提升，也要保持良好的编码风格。以渲染页面所需的模板读取、数据读取和本地化资源为例简单实现：
+```javascript
+var count = 0;
+var results = {};
+var done = function ( key, value ) {
+    results[ key ] = value;
+    count++;
+    if( count === 3 ){
+        // 渲染页面
+        render( results );
+    }
+}
+fs.readFile( template_path, "utf8", function ( err, template ) {
+    done( "template", template );
+} );
+db.query( sql, function ( err, data ) {
+    done( "data", data );
+} )
+liOn.get( function ( err, resources ) {
+    done( "resources", resources );
+} )
+```
+上例执行结果暂无法呈现，我就用一个页面渲染过程来模拟，下段代码会等到所有异步执行结果均返回时再统一将数据渲染到页面中：
+```html
+<body>
+    <div id="div1"></div>
+    <div id="div2"></div>
+    <div id="div3"></div>
+</body>
+<script>
+var count = 0;
+var results = {};
+var done = function ( key, value ) {
+    results[ key ] = value;
+    count++;
+    if( count === 3 ){
+        // 渲染页面，当3个异步执行过程均成功返回数据时再执行 render()方法将数据渲染到页面
+        render( results );
+    }
+}
+
+setTimeout( function ( ) {
+    done( "div1", "aaa" )
+}, 1000 )
+
+setTimeout( function ( ) {
+    done( "div2", "bbb" )
+}, 2000 )
+
+setTimeout( function ( ) {
+    done( "div3", "ccc" )
+}, 1500 )
+
+function render( results ) {
+    var div1 = document.getElementById( "div1" );
+    var div2 = document.getElementById( "div2" );
+    var div3 = document.getElementById( "div3" );
+
+    div1.innerText = results.div1;
+    div2.innerText = results.div2;
+    div3.innerText = results.div3;
+}
+</script>
+```
+由于多个异步场景中回调函数的执行并不能保证顺序，且回调函数之间互相没有任何交集，所以需要借助一个第三方函数和第三方变量来处理异步协作的结果。可以把这个用于检测次数的变量叫做**哨兵变量**。
+
+也可以利用偏函数来处理哨兵变量和第三方函数的关系：
+```javascript
+// 偏函数：通过指定部分参数来产生一个新的定制函数的形式就是偏函数，本例中指定的部分参数就是指定的 times
+var after = function ( times, render ) {
+    var count = 0, results = {};
+    return function ( key, value ) {
+        results[ key ] = value;
+        count++;
+        if( count === times ){
+            render( results );
+        }
+    }
+}
+var done = after( 3, render );
+```
+上述这三段代码就是实现的异步多对一的目的。如果业务继续增长，还可以继续利用发布-订阅模式来完成多对多的方案：
+```javascript
+var events = require( "events" );
+
+var emitter = new events.EventEmitter();
+var after = function ( times, render ) {
+    var count = 0, results = {};
+    return function ( key, value ) {
+        results[ key ] = value;
+        count++;
+        if( count === times ){
+            render( results );
+        }
+    }
+}
+var done = after( 3, render );
+var other = after( 5, render );
+
+emitter.on( "done", done );
+emitter.on( "done", other );
+
+fs.readFile( template_path, "utf8", function ( err, template ) {
+    emitter.emit("done", "template", template );
+} );
+db.query( sql, function ( err, data ) {
+    emitter.emit("done", "data", data );
+} )
+liOn.get( function ( err, resources ) {
+    emitter.emit("done", "resources", resources );
+} )
+```
+这种方案结合前面简单的偏函数完成多对一的收敛和事件订阅-发布模式中一对多的发散。唯一的不足之处，这个方案需要开发者自己定义`done()`函数，以及在回调函数(监听器)中自己从结果(results)中把数据一个一个提取出来，再进行处理。
+
+总的来说，事件发布-订阅非常灵活，可以根据需要高度自定义。下篇将看下异步编程解决方案之二Promise，它提供了更轻松的API来解决异步编程的问题。

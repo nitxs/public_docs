@@ -1,0 +1,205 @@
+关于async函数，需要明确它是generator函数的语法糖，即将生成器函数的`*`换成`async`关键字，将`yield`关键字换成`await`关键字。使用async函数相比于生成器函数的改进主要在于前者具备内置执行器，即直接调用async函数就能执行完整个函数，就像普通函数调用那样，而无需像生成器函数通过调用返回的迭代器的next()方法来手动执行后续代码，非常方便。此外语义化更友好，并且async函数返回的还是一个Promise对象，可以使用then()方法来指定下一步操作。
+
+#### async函数基本用法
+
+当async函数执行时，一旦遇到await关键字就会先返回，等到异步操作完成，然后再接着执行函数体后面的代码。
+```javascript
+function timeout( ms ) {
+    return new Promise( function ( resolve, reject ) {
+        setTimeout( resolve, ms )
+    } )
+}
+
+async function asyncPrint( value, ms ){
+    console.log( "开始" );
+    await timeout( ms );
+    console.log( value );
+}
+
+asyncPrint( "Hello Nitx.", 1000 );
+//打印：
+/*
+开始
+// 1s后打印
+Hello Nitx.
+*/
+```
+
+#### async函数返回Promise对象
+async函数返回一个Promise对象，async函数内部`return`语句返回的值，会变成then方法回调函数的参数。
+```javascript
+async function fn(){
+    return "Hello nitx";
+}
+
+fn()
+.then( function ( data ) {
+    console.log( data );
+} )
+.catch( function ( err ) {
+    console.log( err );
+} )
+
+// Hello nitx
+```
+async函数内部抛出错误，会导致返回的Promise对象转变为reject状态。所以抛出的错误就会被后面的catch()方法回调函数捕获：
+```javascript
+async function fn() {
+    throw new Error( "errmsg" );
+}
+
+fn()
+.then( function ( data ) {console.log( data );} )
+.catch( function ( err ) {
+    console.log( err ); // Error: errmsg
+} )
+```
+async函数返回的Promise对象必须等到内部所有await命令后的异步操作执行完才会执行then方法指定的回调函数，除非遇到return语句或抛出错误。
+```javascript
+var ajaxJSON = function( method ){
+    var method = (method || "GET").toUpperCase();
+
+    return function ( url ) {
+        return new Promise( function ( resolve, reject ) {
+            var xhr = new XMLHttpRequest();
+            xhr.open( method, url );
+            xhr.responseType = "json";
+            xhr.setRequestHeader( "Accept", "application/json" );
+            xhr.onreadystatechange = handler;
+            xhr.send();
+
+            function handler() {
+                if( this.readyState !== 4 ){
+                    return;
+                }
+
+                if( this.status === 200 ){
+                    resolve( this.response );
+                }else {
+                    reject( new Error( this.statusText ) )
+                }
+            }
+        } )
+    }
+}
+
+var getJSON = ajaxJSON();
+
+async function fn( url ){
+    var res = await getJSON( url );
+    return res;     // async函数中return语句返回的数据会作为then()方法的回调函数的参数
+}
+
+fn( "https://api.github.com/users/Bournen" )
+.then( function ( data ) {
+    console.log( data.url );
+} )
+.catch( function ( err ) {
+    console.log( err );
+} )
+```
+#### async函数中异步操作的错误处理
+在async函数中异步操作出错时，等同于Promise对象的reject过程，也就是会被后面的catch()方法的回调函数捕获为参数：
+```javascript
+async function fn( url ){
+    var res = await getJSON( url );
+    return res;
+}
+
+fn( "https://api.github.com/users/Bournen22" )      // 故意设置此处url路径错误
+.then( function ( data ) {
+    console.log( data.url );
+} )
+.catch( function ( err ) {
+    console.log( err );         // Error: Not Found
+} )
+```
+
+这里就有个问题需要指出，用以上写法时，如果async函数中某个异步操作出错时会导致整个async函数中断并抛出错误，如果后面还有其他异步操作也是不会执行到的：
+```javascript
+async function foo() {
+    await Promise.reject( "错误了，这里会导致整个async函数中断" );
+    await Promise.resolve( "这里的异步操作本想执行的，但现在被前面错误导致整个async函数中断了" );
+}
+
+foo()
+.then( function ( data ) {
+    console.log( data );
+} )
+.catch( function ( err ) {
+    console.log( err );    
+} )
+
+ // 错误了，这里会导致整个async函数中断
+```
+但有时如果希望即使前面的异步操作失败，也不会影响中断的异步操作执行。可以将await放在`try...catch...`结构中。这样不管前面个异步是否会成功，后面的异步都会执行：
+```javascript
+async function foo() {
+    try{
+        await Promise.reject( "错误了，这里会导致整个async函数中断" );
+    }catch( e ){
+
+    }
+    return await Promise.resolve( "现在即使前面的异步操作失败，我也可以执行了" );
+}
+
+foo()
+.then( function ( data ) {
+    console.log( data );
+} )
+.catch( function ( err ) {
+    console.log( err );
+} )
+ // 现在即使前面的异步操作失败，我也可以执行了
+```
+所以通常来说，在async函数中，防止出错导致中断整个函数执行的较佳实践是使用`try...catch`代码块。
+
+如果有多个await命令，可以统一放在`try...catch`代码块中：
+```javascript
+async function fn(){
+    try{
+        await first();
+        await second();
+        await third();
+    }catch( e ){}
+    return "HelloWorld";
+}
+```
+也可以使用`try...catch`代码块实现多次重复尝试，例如多次重复访问：
+```javascript
+var getJSON = ajaxJSON();
+var count = 3;
+
+async function fn( url ){
+    for( var i=0; i<count; i++ ){
+        try{
+            var res = await getJSON( url );
+            break;
+        }catch( err ){
+            /* 忽略错误，继续执行 */
+        }
+    }
+    return res;
+}
+
+fn( "https://api.github.com/users/Bournen22" )
+.then( function ( data ) {
+    console.log( data.url );
+} )
+.catch( function ( err ) {
+    console.log( err );
+} )
+```
+在上例中，如果await异步操作成功就会使用break退出循环，如果失败会被catch语句捕获并进入下一个循环。
+
+#### async函数的使用注意点
+1. 由于await命令后面的Promise对象可能失败即rejected会中断整个函数，所以最好把await命令放在`try...catch`代码块中
+2. 多个await命令后面异步操作如果不存在继发关系，则最好让它们同时触发，方法是使用`Promise.all([])`
+```javascript
+async function fn(){
+    try{
+        var [r1, r2] = await Promise.all( [getFoo(), getBar()] );
+    }catch( e ){}
+}
+```
+3. await关键字只能用在async函数中，在其他函数中会报错。
