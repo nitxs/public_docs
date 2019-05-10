@@ -336,6 +336,26 @@ Vue.component( "my-component", {
 </template>
 ```
 
+在子组件触发监听的事件名除了上述写法，还可以这样写：
+
+```javascript
+<template>
+    <div>
+        <button type="button" @click="emitFn">点击</button>
+    </div>
+</template>
+
+<script>
+    export default {
+        methods: {
+            emitFn(){
+                this.$emit( 'localityListener', data )
+            }
+        }
+    }
+</script>
+```
+
 以上代码示例解释：父组件通过`v-on`监听事件名`listener`，并定义事件触发处理函数`listenFn`；子组件通过`v-on`绑定事件触发条件`click`，当条件满足(发生click事件)时通过内建方法`$emit()`触发被父组件监听的事件名，从而执行父组件中该事件监听器定义的事件处理函数`listenFn`。注意这里的子组件事件触发条件`click`仅为举例，请根据实际情况定义合适的触发条件；内建方法`$emit( eventName, [...args] )`中需要传入必选参数`eventName`，该参数为要触发的事件名，可选参数`[...args]`为传递给监听器回调的数据。
 
 #### e.在组件上使用v-model
