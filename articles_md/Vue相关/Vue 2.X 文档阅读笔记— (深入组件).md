@@ -1,6 +1,6 @@
 # Vue 2.X 文档阅读笔记— (深入组件)
 
-## 组件注册
+## 0.组件注册
 
 #### 组件名
 
@@ -87,7 +87,7 @@ export default {
 
 <hr>
 
-## Prop
+## 1.Prop
 
 #### Prop类型
 
@@ -327,7 +327,7 @@ let ComponentA = {
 
 <hr>
 
-## 自定义事件
+## 3.自定义事件
 
 #### 事件名
 
@@ -375,7 +375,7 @@ Vue.component('base-checkbox', {
 
 <hr>
 
-## 插槽
+## 4.插槽
 
 #### 插槽内容
 
@@ -553,3 +553,126 @@ export default {
 
 7. 最后在使用插槽时，只需要考虑两点，插槽是否需要具名？父作用域是否需要获取组件内数据？这两点弄明白，就大概知道怎么设计组件插槽了。
 
+## 5.动态组件与异步组件
+
+#### 用<keep-alive>元素缓存动态组件的状态
+
+在[Vue 2.X 文档阅读笔记一 (基础)](https://blog.csdn.net/qq_34832846/article/details/89945127)中的**动态组件**小节中简单介绍了动态组件的写法，这在需求做多标签tab切换时是非常有用的。但这样的每次切换其实都是会创建一个新的组件实例。如果需求要在组件进行切换时保持组件原有状态，以避免反复渲染导致的性能问题，就可以用`<keep-alive>`元素将动态组件包裹起来。代码实例如下：
+
+```javascript
+<template>
+    <div class="wrap">
+        <!-- 点击不同按钮切换不同组件，并缓存组件状态 -->
+        <button type="button" v-for="( val, index ) in btnArr" :key="index" :data-index="index" @click="changeComponent">{{val.btnText}}</button>
+        <keep-alive>
+            <component :is="currentComponent"></component>
+        </keep-alive>
+    </div>
+</template>
+
+<script>
+let ComponentA = {
+    props: [ "text" ],
+    data(){
+        return {
+            liArr: [
+                { liName: '1' },
+                { liName: '2' },
+                { liName: '3' },
+            ],
+            divCont: [
+                {content: "aaaa"},
+                {content: "bbbb"},
+                {content: "cccc"}
+            ],
+            indexVal: 0
+        }
+    },
+    template: `
+        <div class="sub-class">
+            <ul>
+                <li v-for="(val,index) in liArr" :key="index" :data-index="index" @click="changeLi">{{val.liName}}</li>
+            </ul>
+            <div>
+                {{ divCont[indexVal] }}
+            </div>
+        </div>
+    `,
+    methods: {
+        changeLi( e ){
+            let dataIndex = parseInt( e.target.dataset.index );
+            this.indexVal = dataIndex;
+        }
+    }
+}
+let ComponentB = {
+    props: [ "text2" ],
+    template: `
+        <div class="sub-class">
+            <div>
+                <p>add</p>
+                <slot>{{text2}}</slot>
+            </div>
+        </div>
+    `
+}
+export default {
+    data(){
+        return {
+            btnArr: [
+                { btnText: 'btn1' },
+                { btnText: 'btn2' },
+            ],
+            currentComponent: 'component-A'
+        }
+    },
+    components: {
+        'component-A': ComponentA,
+        'component-B': ComponentB
+    },
+    methods: {
+        changeComponent( e ){
+            let dataIndex = parseInt( e.target.dataset.index );
+            console.log( dataIndex );
+            if( dataIndex === 1 ){
+                this.currentComponent = 'component-B';
+            }else if( dataIndex === 0 ){
+                this.currentComponent = 'component-A';
+            }
+        }
+    }
+}
+</script>
+```
+
+#### 异步组件
+
+> 我也没怎么用过，具体可以查看[官方文档](https://cn.vuejs.org/v2/guide/components-dynamic-async.html)的 异步组件 小节
+
+## 处理边界情况
+
+所谓处理边界情况，就是对vue的一些规则做小调整。但这些小调整都会比较危险，在程序debug时可能会造成额外的困扰。以下给出两个可以使用的，其他官方介绍的个人觉得尽量少用的就不列出，感兴趣的可以去看官方文档，点击[这里](https://cn.vuejs.org/v2/guide/components-edge-cases.html)查看。
+
+#### 访问元素&组件
+
+##### ①.访问根实例
+
+在每个`new vue()`实例的子组件中，都可以通过`$root`属性访问其根实例，可以通过`this.$root`来写入/访问根组件的数据、属性或方法，所以也可以将这个属性作为全局`store`来访问或使用，但是官方也建议只可用于项目组件量很少的情况下使用，大多数情况下都推荐使用`Vuex`来管理应用的状态。
+
+##### ②.访问父组件实例
+
+类似于`$root`，在子组件可以通过`$parent`属性来访问父组件的实例。这样可以在后期随时触达父级组件，以代替将数据以prop的方式传入子组件的方式。但这样会存在导致难以理解和调试的问题，所以也应视情况少用。
+
+##### ③.访问子组件实例或子元素
+
+虽然存在prop和事件，但有时也会需要在js中直接访问一个子组件，为达到这个目的，可以通过`ref`特性为子组件赋予一个ID引用：`<component-A ref="inputComponent"></component-A>`，这样在JS中可以这样获取该子组件`this.$refs.inputComponent`。当然用`ref`也可以获取普通DOM元素，但vue推荐数据驱动，尽量少用类似jq的直接操作dom元素的模式。另外$`refs` 只会在组件渲染完成之后生效，并且它们不是响应式的，所以不要在计算属性中访问`refs`。
+
+#### 程序化的事件侦听器
+
+vue中最常用的事件侦听例子是父组件中`v-on`侦听事件名，在子组件中通过`$emit()`触发相应事件名。此外vue实例还提供其他几个事件接口：
+
+- 通过`$on( eventName, eventHandler )`侦听一个事件
+- 通过`$once(eventName, eventHandler)` 一次性侦听一个事件
+- 通过 `$off(eventName, eventHandler)` 停止侦听一个事件
+
+这个事件侦听器在官方文档给出应用场景示例代码，可以点击[这里](https://cn.vuejs.org/v2/guide/components-edge-cases.html)搜索关键字 *程序化的事件侦听器* 来查看代码示例与应用场景。
