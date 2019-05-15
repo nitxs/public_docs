@@ -27,14 +27,40 @@ svg中定义了七种形状元素：`矩形<rect>`、`圆形<circle>`、`椭圆<
 - ry：对于圆角矩形，指定椭圆在y方向的半径
 
 示例代码：
-
-```javascript
+```html
 <svg width="300" height="300">
+    <!-- 直角矩形 -->
     <rect x="20" y="20" width="200" height="100" style="fill:steeblue;stroke:blue;stroke-width:4;opacity:0.5;"></rect>
+    <!-- 圆角矩形 -->
     <rect x="20" y="150" rx="20" ry="30" width="200" height="100" style="fill:yellow;stroke:black;stroke-width:4;opacity:0.5;"></rect>
 </svg>
 ```
 
 效果截图：
-
 ![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_3.png?raw=true)
+
+#### ②.圆形与椭圆形
+
+圆形的参数有3个：
+- cx: 圆心的x坐标
+- cy: 圆心的y坐标
+- r: 圆的半径
+
+椭圆的参数类似于圆形，只是半径分为水平半径和垂直半径
+- cx: 圆心的x坐标
+- cy： 圆心的y坐标
+- rx: 椭圆的水平半径
+- ry: 椭圆的垂直半径
+
+示例代码
+```html
+<svg width="600" height="300">
+    <!-- 圆形 -->
+    <circle cx="150" cy="150" r="80" style="fill: yellow; stroke: black; stroke-width: 4;"></circle>
+    <!-- 椭圆 -->
+    <ellipse cx="350" cy="150" rx="110" ry="80" style="fill: #33ff33; stroke: blue; stroke-width: 4;"></ellipse>
+</svg>
+```
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_4.png?raw=true)
