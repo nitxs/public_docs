@@ -64,3 +64,11 @@ svg中定义了七种形状元素：`矩形<rect>`、`圆形<circle>`、`椭圆<
 
 效果截图：
 ![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_4.png?raw=true)
+
+#### ③.线段
+
+线段的参数是起点和终点的坐标。
+- x1：起点的x坐标
+- y1: 起点的y坐标
+- x2: 终点的x坐标
+- x3：终点的y坐标
