@@ -72,3 +72,30 @@ svg中定义了七种形状元素：`矩形<rect>`、`圆形<circle>`、`椭圆<
 - y1: 起点的y坐标
 - x2: 终点的x坐标
 - x3：终点的y坐标
+
+示例代码：
+```html
+<svg width="300" height="300">
+    <line x1="20" y1="20" x2="300" y2="100" style="stroke: black;stroke-width: 4;"></line>
+</svg>
+```
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_5.png?raw=true)
+
+#### ④.多边形和折线
+
+多边形和折线的参数相同，都只有一个`points`参数。这个参数的值是一系列的点坐标，不同之处是多边形会将起点与终点连接起来，而折线不会。
+
+示例代码：
+```html
+<svg width="600" height="300">
+    <!-- 多边形 -->
+    <polygon points="100,20 20,90 60,160 140,160 180,90" style="fill:lightgreen; stroke: black; stroke-width: 4;"></polygon>
+    <!-- 折线 -->
+    <polyline points="100,20 20,90 60,160 140,160 180,90" style="fill: white; stroke: black; stroke-width: 4;" transform="translate( 200, 0 )"></polyline>
+</svg>
+```
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_6.png?raw=true)
