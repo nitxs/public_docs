@@ -99,3 +99,85 @@ svg中定义了七种形状元素：`矩形<rect>`、`圆形<circle>`、`椭圆<
 
 效果截图：
 ![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_6.png?raw=true)
+
+#### ⑤.路径
+
+`<path>`标签的功能是所有图形元素中最强大的，所有其他图形元素都可以用路径`<path></path>`来制作出来。类似于折线，路径也是通过一系列点坐标来绘制的。
+
+其用法是：给出一个坐标点，在坐标点前添加一个英文字母，表示如何运动到此坐标点的。
+
+英文字母按照功能可以分成五类：
+
+- 移动类
+  1. M = moveto：将画笔移动到指定坐标。
+- 直线类
+  1. L = lineto：画直线到指定坐标
+  2. H = horizontal lineto：画水平直线到指定坐标
+  3. V = vertical lineto：画垂直直线到指定坐标
+- 曲线类
+  1. C = curveto：画三次贝塞尔曲线经两个指定控制点到达终点坐标
+  2. S = shorthand/smooth curveto：与前一条三次贝塞尔曲线相连，第一个控制点为前一条曲线第二个控制点的对称点，只需输入第二个控制点和终点，即可绘制一个三次贝塞尔曲线
+  3. Q = quadratic Bezier curveto：画二次贝塞尔曲线经一个指定控制点到达终点坐标
+  4. T = shorthand/smooth quadratic Bezier curveto：与前一条二次贝塞尔曲线相连，控制点为前一条二次贝塞尔曲线控制点的对称点，只需输入终点，即可绘制一条二次贝塞尔曲线。
+- 弧线类
+  1. A = elliptical arc：画椭圆曲线到达指定坐标
+- 闭合类
+  1. Z = closepath：绘制一条直线连接起点和终点，用来封闭图形。
+
+注意：以上命令均为大写表示，表示坐标系中的绝对坐标。也可以使用小写字母，表示的是相对坐标，也就是相对当前画笔所在点。
+
+绘制直线：
+```html
+<svg width="600" height="300">
+    <!-- 绘制直线 -->
+    <path d=" M30,100 L270,300
+              M30,100 H270
+              M30,100 V300 "
+          style="stroke: black; stroke-width:3">
+    </path>
+</svg>
+```
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_7.png?raw=true)
+
+绘制三次贝塞尔曲线：
+```html
+<svg width="600" height="300">
+    <!-- 三次贝塞尔曲线 -->
+    <path d=" M30,100 
+              C100,20 190,20 270,100 
+              S400,180 450,100 " 
+          style="fill:white;stroke:black;stroke-width: 3" >
+    </path>
+</svg>
+```
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_8.png?raw=true)
+
+绘制二次贝塞尔曲线：
+```html
+<svg width="600" height="300">
+    <!-- 二次贝塞尔曲线 -->
+    <path d=" M30,100
+              Q190,20 270,100
+              T450,100 "
+          style="fill:white;stroke:black;stroke-width: 3">
+    </path>
+</svg>
+```
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_9.png?raw=true)
+
+绘制弧线，添加闭合：
+```html 
+<svg width="600" height="500">
+    <!-- 弧线 + 闭合 -->
+    <path d=" M100,200
+              a200,150 0 1,0 150,-150
+              Z "
+          style="fill:yellow;stroke:blue;stroke-width:3">
+    </path>
+</svg>
+```
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_10.png?raw=true)
