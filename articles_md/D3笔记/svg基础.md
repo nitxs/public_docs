@@ -212,3 +212,122 @@ svg中定义了七种形状元素：`矩形<rect>`、`圆形<circle>`、`椭圆<
 
 效果截图：
 ![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_11.png?raw=true)
+
+#### ⑦.样式
+
+svg中的样式，可以使用`class`类，也可以直接在元素中写样式。
+
+直接在元素中写样式时支持两种写法：单独写、合并写。
+
+单独写：`<line fill="yellow" stroke="blue" stroke-width="4" x1="20" y1="20" x2="100" y2="100"></line>`
+
+合并写：`<line style="fill:white;stroke:black;stroke-width:3" x1="20" y1="20" x2="100" y2="100"></line>`
+
+常见样式如下：
+- fill：填充色，也可用于改变文字`<text>`的颜色
+- stroke：边框的颜色
+- stroke-width：边框的宽度
+- stroke-linecap：线头端点的样式，圆角、直角等
+- stroke-dasharray：虚线的样式
+- opacity：透明度，0.0为完全透明，1.0为完全不透明
+- font-family：字体
+- font-size：字体大小
+- font-weight：字体粗细，有`normal`、`bold`、`bloder`、`lighter`可选
+- font-style：字体的样式，斜体等
+- text-decoration：上划线、下划线等
+
+#### ⑧.标记
+
+标记`<marker>`可以贴附于`<path>`、`<line>`、`<polyline>`、`<polygon>`元素上。最典型应用是给线段添加箭头。
+
+标记`<marker>`写在`<defs></defs>`之间。`<defs>`用于定义可重复利用的图形元素。
+
+标记`<marker>`内有这些属性：
+- viewBox：坐标系的区域
+- refX、refY：在viewBox内的基准点，绘制时此点在直线端点上
+- markerUnits：标记大小的基准，有两个值，即`strokeWidth`(线的宽度)和`userSpaceOnUse`(线前端的大小)
+- markerWidth、markerHeight：标识的大小
+- orient：绘制方向，可设定为auto(自动确认方向)和角度值
+- id：标识的id号
+
+然后就在`<marker></marker>`标签中定义图形，当调用这个标记时，就会绘制标记里的图形。
+
+以定义一个箭头并调用为例：
+```html
+<svg width="600" height="300">
+    <!-- 定义标记 -->
+    <defs>
+        <marker id="arrow" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6" orient="auto">
+            <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill:#000"></path>
+        </marker>
+    </defs>
+
+    <!-- 带箭头的直线 -->
+    <line x1="0" y1="30" x2="200" y2="50" stroke="red" stroke-width="2" marker-end="url(#arrow)"></line>
+
+    <!-- 带箭头的曲线 -->
+    <path d="M20,70 T80,100 T160,80 T200,90" fill="white" stroke="red" stroke-width="2" marker-start="url(#arrow)" marker-mid="url(#arrow)" marker-end="url(#arrow)"></path>
+</svg>
+```
+其中`#arrow`表示使用id为arrow的标记。`marker-start`表示路径起点处，`marker-mid`表示路径中间端点处，`marker-end`表示路径终点处。由于使用`marker-mid`将绘制在路径的节点处，所以对于只有起点和终点的直线`<line></line>`，使用`marker-mid`无效。
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_12.png?raw=true)
+
+#### ⑨.滤镜
+
+滤镜的标签是`<filter>`，和标记一样，也是定义在`<defs>`中的。
+
+滤镜的种类很多，比如`feMorpholoty`、`feGaussianBlur`、`feFlood`等，还有定义光源的滤镜如`feDistantLight`、`fePointLight`、`feSpotLight`等。
+
+以feGaussianBlur高斯模糊滤镜为例，其中`in`是使用滤镜的对象，`stdDeviation`是高斯模糊唯一的参数，数值越大，模糊程序越高：
+```html
+<svg width="600" height="300">
+    <defs>
+        <filter id="GaussianBlur">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2"></feGaussianBlur>
+        </filter>
+    </defs>
+
+    <!-- 未高斯模糊的矩形 -->
+    <rect x="100" y="100" width="150" height="100" fill="blue"></rect>
+
+    <!-- 高斯模糊的矩形 -->
+    <rect x="300" y="100" width="150" height="100" fill="blue" filter="url(#GaussianBlur)"></rect>
+</svg>
+```
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_13.png?raw=true)
+
+#### ⑩.渐变
+渐变表示一种颜色平滑过渡到另一种颜色。SVG有线性渐变`<linerGradient>`和放射性渐变`<radialGradient>`。
+
+渐变也是定义在`<defs>`标签中。
+
+```html
+<svg width="600" height="300">
+    <defs>
+        <!-- 定义水平渐变 -->
+        <linearGradient id="myGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f00"></stop>
+            <stop offset="100%" stop-color="#0ff"></stop>
+        </linearGradient>
+        <!-- 定义垂直渐变 -->
+        <linearGradient id="myGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#f00"></stop>
+            <stop offset="100%" stop-color="#0ff"></stop>
+        </linearGradient>
+    </defs>
+
+    <!-- 水平线性渐变 -->
+    <rect fill="url(#myGradient)" x="10" y="10" width="300" height="100"></rect>
+
+    <!-- 垂直线性渐变 -->
+    <rect fill="url(#myGradient2)" x="10" y="150" width="300" height="100"></rect>
+</svg>
+```
+其中`x1`、`y1`、`x2`、`y2`定义渐变的方向。`offset`定义渐变开始的位置，`stop-color`定义此位置的颜色。
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_14.png?raw=true)
