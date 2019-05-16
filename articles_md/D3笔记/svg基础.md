@@ -179,5 +179,36 @@ svg中定义了七种形状元素：`矩形<rect>`、`圆形<circle>`、`椭圆<
     </path>
 </svg>
 ```
+弧线是根据椭圆来绘制的，对应的参数为`A( rx, ry, x-axis-rotation, large-arc-flag, sweep-flag, x, y )`。
+- rx：椭圆x方向的半轴大小
+- ry：椭圆y方向的半轴大小
+- x-axis-rotation：椭圆的x轴与水平轴顺时针方向的夹角
+- large-arc-flag：有两个值，(1：大角度弧线；0：小角度弧线)
+- sweep-flag：有两个值，(1：顺时针到终点；0：逆时针到终点)
+- x：终点x坐标
+- y：终点y坐标
+
+上述弧线示例代码的含义就是：起始画笔的位置是`M100,200`，a用了小写字母，表示相对坐标，则终点位置就是`100+150, 200-150`。包含弧线的椭圆的x和y方向的半径分别是200和150，椭圆x轴与水平轴的夹角是0度，采用了大角度弧线、逆时针走向终点。最后的Z表示将起点与终点闭合。
+
 效果截图：
 ![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_10.png?raw=true)
+
+#### ⑥.文字
+在svg中可以使用`<text>`标签绘制文字，其属性如下：
+
+- x：文字位置的x坐标
+- y: 文字位置的y坐标
+- dx：相对于当前位置在x方向上平移的距离(值为正则往右，负则往左)
+- dy：相对于当前位置在y方向上平移的距离(值为正则往下，负则往上)
+- textLength：文字的显示长度(不足则拉长，足则压缩)
+- rotate：旋转角度(顺时针为正，逆时针为负)
+- 如果要对文字中某一部分文字单独设置样式，可使用`<tspan></tspan>`标签
+
+```html
+<svg width="300" height="300">
+    <text x="200" y="150" dx="-5" dy="5" rotate="360" textLength="90"> I Love <tspan fill="red">D3</tspan> </text>
+</svg>
+```
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190515_11.png?raw=true)
