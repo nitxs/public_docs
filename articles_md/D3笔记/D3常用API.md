@@ -565,3 +565,348 @@ console.log( iLeft );   // 2
 array9.splice( iLeft, 0, 11 );
 console.log( array9 );  // [7, 9, 11, 16, 20]
 ```
+
+##### ⑤.操作数组
+
+d3还提供了对数组进行洗牌、合并等操作：
+- `d3.shuffle( array[, lo[, hi]] )`：随机排列数组，将数组作为参数使用后，能将数组随机排列。
+- `d3.merge( arrays )`：合并两个数组
+- `d3.pairs( array )`：返回邻接的数组对，以第i项和第i-1项为对返回。使用本方法后，原数组 array 不变。
+- `d3.range( [start ,] stop[, step] )`：返回等差数列，如果stop为正，则最后的值小于stop；如果stop为负，则最后的值大于stop。start和step如果省略，则默认值是0和1.range在生成数组时经常使用。
+- `d3.permute( array, indexes )`：根据指定的索引号数组返回排列后的数组，原数组不变，结果保存在返回值中。要注意数组索引号从0开始，如有超出范围的索引号，该位置会以undefined代替。
+- `d3.zip( arrays... )`：用多个数组来生成元素为数组的数组。参数是任意多个数组，输出的是一个数组。
+- `d3.transpose( matrix )`：求转置矩阵，即将矩阵的行转为列，得到的矩阵即为转置矩阵。
+
+以上方法的代码示例：
+```javascript
+// 重新随机排列数组
+let array1 = [10, 23, 'nitx', 99, 0];
+console.log( d3.shuffle( array1 ) );    // 结果随机，本次执行结果为 [0, 10, 23, 99, "nitx"]
+
+// 合并两个数组
+let mergeArr = d3.merge( [ [10, 2], [22, 0, 7] ] );
+console.log( mergeArr );    // [10, 2, 22, 0, 7]
+
+// 返回邻接的数组对
+let array3 = [ 'nitx', 'sxm', 'hx', 'nz', 'zn' ];
+let pairs = d3.pairs( array3 );
+console.log( pairs );
+/** 原数组 array3 值不变
+ * [
+ *    ["nitx", "sxm"],
+ *    ["sxm", "hx"],
+ *    ["hx", "nz"],
+ *    ["nz", "zn"]
+ * ]
+ */
+
+// 返回等差数列
+// start为0，stop为10，step为1
+console.log( d3.range( 10 ) );  // [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+// start为2，stop为10，step为1
+console.log( d3.range( 2, 10 ) );   // [2, 3, 4, 5, 6, 7, 8, 9]
+
+// start为2，stop为10，step为2
+console.log( d3.range( 2, 10, 2 ) );    // [2, 4, 6, 8]
+
+// 根据指定的索引号数组返回排列后的数组
+let array4 = [ 'nitx', 'hx', 'sxm' ];
+// 索引数组是 [2, 0, 1]，将数组array4根据索引数组指定的顺序重排，不影响原数组array4，结果保存在变量newArr中。
+let newArr = d3.permute( array4, [2, 0, 1] );
+console.log( newArr ); // ["sxm", "nitx", "hx"]
+
+// zip()
+let zip = d3.zip( 
+    [ 10, 99, 76 ],
+    [ 'nitx', 'sxm', 'hx' ],
+    [ true, false, true ]
+ )
+console.log( zip );
+/**
+ * [
+ *   [10, "nitx", true],
+ *   [99, "sxm", false],
+ *   [76, "hx", true]
+ * ]
+ */
+// zip()方法最典型的用法是可以用来求向量的积
+let a = [ 10, 20, 5 ];
+let b = [ -5, 10, 3 ];
+console.log( d3.zip( a, b ) );
+let ab = d3.sum( d3.zip( a, b ), function( d ){
+    return d[0] * d[1];
+} )
+console.log( ab );      // 165
+/**
+ * 上例向量积代码解释：
+ * d3.zip( a, b ) => 得到结果： [ [10, -5], [20, 10], [5, 3] ]
+ * 然后结果首先被accessor函数处理，得到结果 => [ -50, 200, 15 ]
+ * 最后被d3.sum()求和，结果即为向量a和b的内积。
+ */
+
+ // 转置矩阵
+ let c = [ [1, 2, 3], [4, 5, 6] ];
+ // 转置后，原数组不变，结果保存在返回值赋值给变量t
+ let t = d3.transpose( c );
+ console.log( t );  // [ [1, 4], [2, 5], [3, 6] ]
+```
+
+## 映射 map
+
+映射(Map)由一系列键(Key)和值(value)构成的常见数据结构。每个key对应一个value，根据key可以获取和设定对应value。在js中，map类似于对象，但相对对象的键只接受字符串作为键名，map的键名则可以使用任何类型的值，是一种更完善的hash结构。
+
+- `d3.map( [object][, key] )`用于构建map映射。可选参数object是源数组，可选参数key是用于指定映射的key。
+- `map.has( key )`：指定key存在时返回true，否则返回false。
+- `map.get( key )`：指定key存在则返回该key对应的value，否则返回false
+- `map.set( key, value )`: 对指定key设定value，如该key存在，则新value覆盖旧value。
+- `map.remove( key )`：如果指定的key存在，则将此key和对应value删除，如不存在则返回false
+- `map.keys()`：以数组形式返回map的所有key
+- `map.values()`：以数组形式返回map的所有value
+- `map.entries()`：以数组形式返回map所有的key和value
+- `map.empty()`：如果映射为空，返回true；否则返回false
+- `map.size()`：返回映射的大小
+
+```javascript
+let dataset = [
+    { id: 1000, name: 'nitx' },
+    { id: 1001, name: 'hx' },
+    { id: 1002, name: 'sxm' }
+]
+
+// 以数组dataset构建映射，并以其中各项的id为键，当然也可以指定别的不相关的值，不一定要使用id
+let map = d3.map( dataset, function( d ){
+    return d.id;
+} )
+
+map.has( 1001 );    //true
+map.has( 1003 );    //false
+
+console.log( map.get( 1001 ) );     // {id: 1001, name: "hx"}
+console.log( map.get( 1003 ) );     // undefined
+
+// 将键key的值新设
+map.set( 1001, { id: 1001, name: 'nz' } );
+console.log( map );
+
+// 将键key的值新设
+map.set( 1003, { id: 1003, name: 'hx' } );
+console.log( map );
+
+// 删除key为1001的键和值
+map.remove( 1001 );
+console.log( map );
+
+// 返回所有键组成的数组
+console.log( map.keys() );  // ["1000", "1002", "1003"]
+
+// 返回所有值组成的数组
+console.log( map.values() );    // [ {id: 1000, name: "nitx"}, {id: 1002, name: "sxm"}, {id: 1003, name: "hx"} ]
+
+// 返回所有的键和值
+console.log( map.entries() );   
+/**
+ * [
+ *    {key: "1000", value: {id: 1000, name: "nitx"}},
+ *    {key: "1002", value: {id: 1002, name: "sxm"}},
+ *    {key: "1003", value: {id: 1003, name: "hx"}}
+ * ]
+ */
+
+console.log( map.empty() );     // false
+
+console.log( map.size() );      // 3
+```
+
+## 集合 set
+
+集合类似于数组，但是成员的值都是唯一的，没有重复的值。
+
+- `d3.set( [array] )`：使用数组来构建集合，如果集合中有重复的值，则只添加其中一项。
+- `set.has( value )`：如果集合中有指定元素，返回true，否则返回false。
+- `set.add( value )`：如果集合中没有指定元素，则将其添加到集合中，否则就不添加
+- `set.remove( value )`：如果集合中有指定元素，则将其删除并返回true，否则返回false
+- `set.values()`：以数组形式返回集合中的所有元素
+- `set.empty()`：如果该集合为空，返回true；否则返回false
+- `set.size()`：返回该集合的大小
+
+## 嵌套结构 nest
+
+嵌套结构可以使用键对数组中的大量对象进行分类，多个键一层套一层，使得分类越来越具体，索引越来越方便。
+
+例如要在几千个职员数据中查找其中一个职员的信息，但只知道其出生地和年龄分别是北京和22岁，一般这样查比较简单：先查找在北京的职员，再在其中查找22岁的职员。如此可一步步缩小查找范围。那么出生地和年龄就能作为嵌套结构的键。
+
+代码示例：
+```javascript
+let persons = [
+    { id: 1000, name: '倪某某', year: '1988', hometown: '北京' },
+    { id: 1001, name: '黄某某', year: '1988', hometown: '无锡' },
+    { id: 1002, name: '沈某某', year: '1987', hometown: '上海' },
+    { id: 1003, name: '赵某某', year: '1984', hometown: '广州' },
+    { id: 1004, name: '胡某某', year: '1987', hometown: '上海' }
+]
+
+let nest = d3.nest()
+             // 将year作为第一个键
+             .key( function( d ){ return d.year } )
+             // 将hometown作为第二个键
+             .key( function( d ){ return d.hometown } )
+             // 指定将应用嵌套结构的数组是persons
+             .entries( persons );
+
+console.log( nest );
+let persons = [
+    { id: 1000, name: '倪某某', year: '1988', hometown: '北京' },
+    { id: 1001, name: '黄某某', year: '1988', hometown: '无锡' },
+    { id: 1002, name: '沈某某', year: '1987', hometown: '上海' },
+    { id: 1003, name: '赵某某', year: '1984', hometown: '广州' },
+    { id: 1004, name: '胡某某', year: '1987', hometown: '上海' }
+]
+
+let nest = d3.nest()
+             // 将year作为第一个键
+             .key( function( d ){ return d.year } )
+             .sortKeys( d3.ascending )  // 将键名year按照递增排序
+             // 将hometown作为第二个键
+             .key( function( d ){ return d.hometown } )
+             // 指定将应用嵌套结构的数组是persons
+             .entries( persons );
+
+console.log( nest );
+/**
+ * 嵌套数据结构
+ * [
+ *   {
+ *      key: "1984",
+ *      values: [
+ *                  { 
+ *                      key: "广州", 
+ *                      values: [ { id: 1003, name: '赵某某', year: '1984', hometown: '广州' } ] 
+ *                  }
+ *              ]
+ *   },
+ *   {
+ *      key: "1987",
+ *      values: [
+ *                  { 
+ *                      key: "上海", 
+ *                      values: [ 
+ *                                  { id:1002, name: "沈某某", year: "1987", hometown: "上海" }, 
+ *                                  { id:1004, name: "胡某某", year: "1987", hometown: "上海" } 
+ *                              ] 
+ *                  }
+ *              ]
+ *   },
+ *   {
+ *      key: "1988",
+ *      values: [
+ *                  { 
+ *                      key: "北京", 
+ *                      values: [ { id:1000, name: "倪某某", year: "1988", hometown: "北京" } ] 
+ *                  },
+ *                  { 
+ *                      key: "无锡", 
+ *                      values: [ { id:1001, name: "黄某某", year: "1988", hometown: "无锡" } ] 
+ *                  }
+ *              ]
+ *   },
+ * ]
+ */
+```
+
+以上代码使用了如下方法：
+
+- `d3.nest()`：该函数没有任何参数，表示接下来会构建一个嵌套结构，其他函数需要跟在此函数之后使用
+- `nest.key( fn )`：指定嵌套结构的键
+- `nest.entries( array )`：指定数组array将被用于构建嵌套结构
+- `nest.sortKeys( comparator )`：按照键对嵌套结构进行排序，接在`nest.key()`后使用
+- `nest.sortValues( comparator )`：按照值对嵌套结构进行排序
+- `nest.rollup( fn )`：对每组叶子节点调用指定函数fn，该函数有一个参数values，是当前叶子节点的数组
+- `nest.map( array[, mapType] )`：以映射形式输出数组
+
+## 柱状图
+
+```html
+<body></body>
+
+<script>
+import * as d3 from "d3";
+
+// 定义表示每个柱状矩形长短的数组
+// 数组长度表示柱状矩形的个数，数组项值表示柱状矩形的高度，单位为px
+let dataset = [ 50, 43, 120, 87, 99, 167, 142 ];
+
+// 定义宽高变量
+let width = 400, height= 400;   
+
+// 1.定义SVG画布
+let svg = d3.select( "body" )   // 选择body元素
+            .append( "svg" )    // 添加svg元素
+            .attr( "width", width )     // 定义svg画布的宽度
+            .attr( "height", height )   // 定义svg画布的高度
+            .style( "background-color", "#e5e5e5" )
+
+// 2.定义柱状矩形
+// 定义svg内边距            
+let padding = { top: 20, right: 20, bottom: 20, left: 20 };
+
+// 定义矩形所占宽度(包括空白处)，表示前一柱状矩形开始位置到后一个柱状矩形开始位置的矩形，此部分包含一段空白，它是为和后一个柱状矩形做区分。
+let rectStep = 35;
+
+// 定义矩形所占宽度(不包括空白)，表示柱状矩形实际所占的宽度，此部分是要填充颜色的
+let rectWidth = 30;
+
+let rect = svg.selectAll( "rect" )  // 获取空选择集
+              .data( dataset )  // 绑定数据
+              .enter()      // 获取enter部分，因为此时页面上其实是没有rect元素的，获取的是空选择集，此时就要在enter部分上进行操作
+              .append( "rect" ) // 根据数据个数插入相应数量的rect元素
+              .attr( "fill", "#377ade" )  // 设置每个柱状矩形的填充颜色为 steelblue
+              .attr( "x", function( d, i ){     // 设置每个柱状矩形的x坐标
+                return padding.left + i*rectStep;
+              } )
+              .attr( "y", function( d, i ){     // 设置每个柱状矩形的y坐标
+                return height - padding.bottom - d;
+              } )
+              .attr( "width", rectWidth )   // 设置每个柱状矩形的宽度
+              .attr( "height", function( d, i ){   // 设置每个柱状矩形的高度
+                return d;
+              } )
+
+// 3.为柱状矩形添加标签文字
+let text = svg.selectAll( "text" )  // 获取空选择集
+              .data( dataset )      // 绑定数据
+              .enter()              // 获取enter部分
+              .append( "text" )     // 为每个数据添加对应的text元素
+              .attr( "fill", "#fff" )   
+              .attr( "font-size", "14px" )
+              .attr( "text-anchor", "middle" )  // 文本锚点属性，中间对齐
+              .attr( "x", function( d, i ){
+                return padding.left + i*rectStep;
+              } )
+              .attr( "y", function( d, i ){
+                return height - padding.bottom - d;
+              } )
+              .attr( "dx", rectWidth/2 )
+              .attr( "dy", "1em" )
+              .text( function( d ){
+                return d;
+              } )
+
+// 为svg添加标题              
+svg.append( "text" )
+   .attr( "fill", "#000" )
+   .attr( "textLength", 60 )
+   .style( "font-size", "16px" )
+   .attr( "x", function(){
+        return 160;
+    } )
+   .attr( "y", function(){
+        return 30;
+    } )
+   .text( function(){
+        return "柱状图"
+    } )
+</script>
+```
+
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190520_4.png?raw=true)
