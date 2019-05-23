@@ -826,6 +826,10 @@ console.log( nest );
 
 ## 柱状图
 
+##### ①.制作柱状图
+
+制作一个柱状图，并配上相应的文字。代码示例如下：
+
 ```html
 <body></body>
 
@@ -910,3 +914,167 @@ svg.append( "text" )
 ```
 结果截图：
 ![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190522_1.png?raw=true)
+
+其中文字`<text>`的`text-anchor`属性需要特地讲下，它有三个值：`start`、`middle`、`end`。由于文本设置的`x、y、dx、dy`这几个属性，所以按坐标轴原点来理解，`(x+dx, y+dy)`就是文字的起始位置，`start`值表示文字的第一个字符位于起始位置的右方；`middle`值表示文字的中心位于起始位置；`end`值表示文字的最后一个字符靠近起始位置。
+
+##### ②.更新数据
+
+常见需求：当执行数据排序、增加删除等更新数据操作时柱状图也会发生改变。代码示例如下：
+
+```html
+<body>
+    <button type="button" id="sortBtn">重排</button>
+    <button type="button" id="addBtn">新增</button>
+    <button type="button" id="removeBtn">删除</button>
+</body>
+
+<script>
+import * as d3 from "d3";
+
+// 定义表示每个柱状矩形长短的数组
+// 数组长度表示柱状矩形的个数，数组项值表示柱状矩形的高度，单位为px
+let dataset = [ 50, 43, 120, 87, 99, 167, 142 ];
+
+// 定义宽高变量
+let width = 400, height= 400;   
+
+// 定义svg内边距            
+let padding = { top: 20, right: 20, bottom: 20, left: 20 };
+
+// 定义矩形所占宽度(包括空白处)，表示前一柱状矩形开始位置到后一个柱状矩形开始位置的矩形，此部分包含一段空白，它是为和后一个柱状矩形做区分。
+let rectStep = 35;
+
+// 定义矩形所占宽度(不包括空白)，表示柱状矩形实际所占的宽度，此部分是要填充颜色的
+let rectWidth = 30;
+
+let svg = d3.select( "body" )       // 选择body元素
+            .append( "svg" )        // 添加svg元素
+            .attr( "width", width )     // 定义svg画布的宽度
+            .attr( "height", height )   // 定义svg画布的高度
+            .style( "background-color", "#e5e5e5" )
+
+// 默认绘制柱状图            
+draw();
+
+/**
+ * 绘制柱状图方法
+ * 分别绘制矩形和文字，并定义各自的属性
+ * 更新使用到updata部分
+ * 新增使用到enter部分
+ * 删除使用到exit部分
+ */
+function draw(){
+    // 获取矩形的updata部分
+    let updataRect = svg.selectAll( "rect" )    // 获取空选择集
+                        .data( dataset )        // 绑定数据
+
+    // 获取矩形的enter部分                        
+    let enterRect = updataRect.enter(); // 获取enter部分，因为此时页面上其实是没有rect元素的，获取的是空选择集，此时就要在enter部分上进行操作
+
+    // 获取矩形的exit部分
+    let exitRect = updataRect.exit();   
+
+    // 矩形的updata部分的处理方法
+    updataRect.attr( "fill", "#377ade" )
+              .attr( "x", function( d, i ){     // 设置每个柱状矩形的x坐标
+                return padding.left + i*rectStep;
+              } )
+              .attr( "y", function( d, i ){     // 设置每个柱状矩形的y坐标
+                return height - padding.bottom - d;
+              } )
+              .attr( "width", rectWidth )       // 设置每个柱状矩形的宽度
+              .attr( "height", function( d ){   // 设置每个柱状矩形的高度
+                return d;
+              } )
+    
+    // 矩形的enter部分的处理方法
+    enterRect.append( "rect" )
+             .attr( "fill", "#377ade" )
+             .attr( "x", function( d, i ){
+               return padding.left + i*rectStep;
+              } )
+             .attr( "y", function( d, i ){
+               return height - padding.bottom - d;
+              } )
+             .attr( "width", rectWidth )
+             .attr( "height", function( d ){
+               return d;
+              } )
+
+    // 矩形的exit部分的处理方法
+    exitRect.remove();
+
+    // 获取文字的updata部分
+    let updataText = svg.selectAll( "text" )
+                        .data( dataset )
+
+    // 获取文字的enter部分                        
+    let enterText = updataText.enter();
+
+    // 获取文字的exit部分
+    let exitText = updataText.exit();
+
+    // 文字的updata部分的处理方法
+    updataText.attr( "fill", "#fff" )
+              .attr( "font-size", "14px" )
+              .attr( "text-anchor", "middle" )  // 文本锚点属性，中间对齐
+              .attr( "x", function( d, i ){
+                return padding.left + i*rectStep;
+              } )
+              .attr( "y", function( d, i ){
+                 return height - padding.bottom - d;
+              } )
+              .attr( "dx", rectWidth/2 )
+              .attr( "dy", "1em" )
+              .text( function( d ){
+                return d;
+              } )
+
+     // 文字的enter部分的处理方法
+     enterText.append( "text" )
+              .attr( "fill", "#fff" )
+              .attr( "font-size", "14px" )
+              .attr( "text-anchor", "middle" )  // 文本锚点属性，中间对齐
+              .attr( "x", function( d, i ){
+                return padding.left + i*rectStep;
+              } )
+              .attr( "y", function( d, i ){
+                 return height - padding.bottom - d;
+              } )
+              .attr( "dx", rectWidth/2 )
+              .attr( "dy", "1em" )
+              .text( function( d ){
+                return d;
+              } )
+
+    // 文字的exit部分的处理方法              
+    exitText.remove();
+}
+
+let sortBtn = document.getElementById( "sortBtn" );
+let addBtn = document.getElementById( "addBtn" );
+let removeBtn = document.getElementById( "removeBtn" );
+
+// 递增重排
+sortBtn.onclick = function( e ){
+    // 将数据按递增规则排序
+    dataset.sort( d3.ascending );
+    draw();
+}
+
+// 增加柱状数据
+addBtn.onclick = function( e ){
+    dataset.push( Math.floor( Math.random() * 100 ) );
+    draw();
+}
+
+// 删除最后一个柱状数据
+removeBtn.onclick = function( e ){
+    dataset.pop();
+    draw();
+}
+</script>
+```
+
+效果截图：
+![](https://github.com/nitxs/public_docs/blob/master/image_hosting/19/190522_2.png?raw=true)
