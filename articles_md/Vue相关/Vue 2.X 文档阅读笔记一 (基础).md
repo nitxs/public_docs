@@ -1,3 +1,78 @@
+## 0.Vue实例
+通过`new Vue()`创建一个vue实例，并可传入选项对象。
+
+当一个 Vue 实例被创建时，它将 data 对象中的所有的属性加入到 Vue 的响应式系统中。当这些属性的值发生改变时，视图将会产生“响应”，即匹配更新为新的值。
+
+vue实例创建过程中有一套完整的生命周期，每个生命周期都有对应的钩子函数。下面可以看下生命周期示意图：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20190510093147500.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM0ODMyODQ2,size_16,color_FFFFFF,t_70)
+
+生命周期对应钩子函数代码示例：
+```javascript
+<template>
+    <div class="wrap">
+        <p>{{msg}}</p>
+    </div>
+</template>
+<script>
+export default {
+    data(){
+        return {
+            msg: 'i am nitx'
+        }
+    },
+    beforeCreate: function() {
+      console.group('------beforeCreate创建前状态------');
+      console.log(this.$el); 
+      console.log(this.$data); 
+      console.log(this.message) 
+    },
+    created: function() {
+      console.group('------created创建完毕状态------');
+      console.log(this.$el); 
+      console.log(this.$data);
+      console.log(this.message); 
+    },
+    beforeMount: function() {
+      console.group('------beforeMount挂载前状态------');
+      console.log(this.$el);
+      console.log(this.$data); 
+      console.log(this.message);  
+    },
+    mounted: function() {
+      console.group('------mounted 挂载结束状态------');
+      console.log(this.$el);    
+      console.log(this.$data); 
+      console.log(this.message); 
+    },
+    beforeUpdate: function () {
+      console.group('beforeUpdate 更新前状态===============》');
+      console.log(this.$el);  
+      console.log(this.$data); 
+      console.log(this.message); 
+    },
+    updated: function () {
+      console.group('updated 更新完成状态===============》');
+      console.log(this.$el);
+      console.log(this.$data); 
+      console.log(this.message); 
+    },
+    beforeDestroy: function () {
+      console.group('beforeDestroy 销毁前状态===============》');
+      console.log(this.$el);    
+      console.log(this.$data); 
+      console.log(this.message); 
+    },
+    destroyed: function () {
+      console.group('destroyed 销毁完成状态===============》');
+      console.log(this.$el);  
+      console.log(this.$data); 
+      console.log(this.message)
+    }
+}
+</script>
+```
+上例的打印结果截图：
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20190510092744455.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM0ODMyODQ2,size_16,color_FFFFFF,t_70)
 
 ## 1.Vue模板语法
 
