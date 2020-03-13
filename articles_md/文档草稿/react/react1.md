@@ -369,4 +369,302 @@ console.log( d )： Class {dispatchConfig: {…}, _targetInst: FiberNode, nativ
 
 在这两种情况下，React 的事件对象 e 会被作为第二个参数传递。如果通过箭头函数的方式，事件对象必须显式的进行传递，而通过 bind 的方式，事件对象以及更多的参数将会被隐式的进行传递。
 
+这里补充下React事件对象e的一个知识点，如要想从React事件对象中访问系统属性value时，可以通过`e.target.value`，如想从React事件对象中访问自定义属性时，可以通过`e.target.dataset`。
+
+## 条件渲染
+
+在React中，可以创建不同的组件来封装各种需要的行为。然后依据应用的不同状态，可以只渲染对应状态下的部分内容。
+
+```javascript
+// 1.创建不同组件来封装不同行为
+function UserGreeting( props ){
+    return (
+        <h1>Welcome back!</h1>
+    )
+}
+
+function GuestGreetin( props ){
+    return (
+        <h1>Please sing up.</h1>
+    )
+}
+
+// 登陆登出时显示的问候文案组件
+class Greeting extends React.Component{
+    constructor( props ){
+        super( props );
+        this.state = {}
+    }
+
+    render(){
+        if( this.props.isLoginInProp ){
+            return <UserGreeting />
+        }else {
+            return <GuestGreetin />
+        }
+    }
+}
+
+// 登陆状态控制组件
+class LoginControl extends React.Component{
+    constructor( props ){
+        super(props);
+        this.state = {
+            isLoginIn: false
+        }
+
+        this.handleLoginClick = this.handleLoginClick.bind( this )
+        this.handleLogOutClick = this.handleLogOutClick.bind( this )
+    }
+
+    handleLoginClick(e){
+        console.log( e );
+        this.setState( {
+            isLoginIn: true
+        } )
+    }
+
+    handleLogOutClick(){
+        this.setState( {
+            isLoginIn: false
+        } )
+    }
+
+    render(){
+        // 2.依据应用的不同状态，可以只渲染对应状态下的部分内容
+        let isLoggedIn = this.state.isLoginIn;
+        let buttonCom;
+
+        if( isLoggedIn ){
+            buttonCom = <button onClick={this.handleLogOutClick}>登出</button>
+        }else {
+            buttonCom = <button onClick={this.handleLoginClick}>登陆</button>
+        }
+
+        return (
+            <div>
+                {/* 子组件Greeting根据是否登陆来显示问候文案 */}
+                <Greeting isLoginInProp={isLoggedIn} />
+                {buttonCom}
+            </div>
+        )
+    }
+}
+```
+
+阻止组件渲染的方法是让 `render` 方法直接返回 `null`。示例如下：
+
+```javascript
+// 根据不同状态返回内容
+function WarnBanner( props ){
+    if( !props.warn ){
+        return null;
+    }
+
+    return (
+        <div className="warning">
+            Warning!
+        </div>
+    )
+}
+
+class Page extends React.Component{
+    constructor( props ){
+        super( props );
+        this.state = {
+            showWarn: true
+        };
+    }
+
+    handleShowWarn(e){
+        this.setState( {
+            showWarn: !this.state.showWarn
+        } )
+    }
+
+    render(){
+        return (
+            <div>
+                <WarnBanner warn={this.state.showWarn} />
+                <button type="button" onClick={this.handleShowWarn.bind( this )}>
+                    点击
+                </button>
+            </div>
+        )
+    }
+}
+```
+
+## 列表
+
+react中列表的渲染有如下示例，同时需添加key属性，key能帮助React识别哪些元素改变，通常建议取值为该元素在列表中的独一无二的字符串，一般使用id来作为元素的key，而当元素确定没有id时，万不得已也可使用元素索引index作为key的值，但如果列表项目顺序未来可能会发生变化时，则不建议使用索引来作为key值，因为这会导致性能变差，还可能引起组件状态问题。如果不指定显式key值，React会默认使用索引作为列表项目的key值。
+
+```javascript
+function ListItem( props ){
+    return (
+        <li>{props.value}</li>
+    )
+}
+
+class ListItems extends React.Component{
+    constructor( props ){
+        super(props);
+        this.state = {
+
+        }
+    }
+
+    render(){
+        let numbers = [ 1, 2, 3, 4, 5 ];
+        let listNumbers = numbers.map( (num, index)=> 
+            <ListItem key={num.toString()} value={num} />
+        );
+
+        return (
+            <div>
+                <ul>
+                    {listNumbers}
+                </ul>
+            </div>
+        )
+
+    }
+}
+```
+
+## React表单
+
+HTML表单元素通常自己维护state(状态)，并根据用户输入进行更新。而在React中，可变状态通常保存在组件的state属性中，并且只能通过`setState()`来更新。
+
+所以React表单组件可以结合以上两点，既可以使react表单组件的state成为唯一数据源，还可以控制用户输入过程中表单发生的操作。被 React 以这种方式控制取值的表单输入元素就叫做“受控组件”：
+
+```javascript
+class NameForm extends React.Component{
+    constructor( props ){
+        super( props );
+        this.state = {
+            value: ''
+        }
+    }
+
+    handleChange( e ){
+        this.setState( {
+            value: e.target.value
+        } )
+    }
+
+    handleSubmit( e ){
+        console.log( `提交的名称是： ${this.state.value}` );
+        e.preventDefault();
+    }
+
+    render(){
+        return (
+            <div>
+                <form action="" onSubmit={this.handleSubmit.bind( this )}>
+                    <input type="text" value={this.state.value} onChange={this.handleChange.bind( this )}/>
+                    <input type="submit" value="提交"/>
+                </form>
+            </div>
+        )
+    }
+}
+```
+
+由于在表单元素上设置了 value 属性，因此显示的值将始终为 this.state.value，这使得 React 的 state 成为唯一数据源。由于 handlechange 在每次按键时都会执行并更新 React 的 state，因此显示的值将随着用户输入而更新。
+
+对于受控组件来说，每个 state 突变都有一个相关的处理函数。这使得修改或验证用户输入变得简单。例如，如果我们要强制要求所有名称都用大写字母书写，我们可以将 handlechange 改写为：
+
+```javascript
+handleChange(e) {
+  this.setState({value: e.target.value.toUpperCase()});
+}
+```
+
+不同于HTML中`<textarea>`元素通过其子元素定义其文本，React中`<textarea>`使用`value`属性代替。如此就使得`<textarea>`类似于单行`input`元素。具体参照上例。
+
+HTML中`select`创建下拉列表标签时，会在`option`中根据`selected`属性来表示该项已被选中。但在React中，不使用`selected`属性，而是根 select 标签上使用 `value` 属性。这在受控组件中更便捷，因为您只需要在根标签中更新它：
+
+```javascript
+class FlavorForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {value: 'coconut'};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit(event) {
+    alert('你喜欢的风味是: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          选择你喜欢的风味:
+          <select value={this.state.value} onChange={this.handleChange}>
+            <option value="grapefruit">葡萄柚</option>
+            <option value="lime">酸橙</option>
+            <option value="coconut">椰子</option>
+            <option value="mango">芒果</option>
+          </select>
+        </label>
+        <input type="submit" value="提交" />
+      </form>
+    );
+  }
+}
+```
+
+如要对`select`标签实行多选时，可以将数组传入根select标签的value属性中：`<select multiple={true} value={['B', 'C']}>`。
+
+以上3个表单标签：`<input type="text">`、`<textarea>`和`<select>`都接收一个`value`属性，可以以此来实现受控组件。
+
+当需要处理多个 input 元素时，我们可以给每个元素添加 name 属性，并让处理函数根据 event.target.name 的值选择要执行的操作：
+
+```javascript
+class CkAndInput extends React.Component{
+    constructor( props ){
+        super(props);
+        this.state = {
+            inputCk: true,
+            inputName: 2
+        }
+    }
+
+    handleChange( e ){
+        let target = e.target;
+        let value = target.type === 'checkbox' ? target.checked : target.value;
+        let name = target.name;
+
+        // 由于 setState() 自动将部分 state 合并到当前 state, 只需调用它更改部分 state 即可
+        this.setState( {
+            [name]: value
+        } )
+    }
+
+    render(){
+        return (
+            <div>
+                <form action="">
+                    <div>
+                        复选框：<input type="checkbox" name="inputCk" onChange={this.handleChange.bind(this)} checked={this.state.inputCk} />
+                    </div>
+                    <div>
+                        名称：<input type="text" name="inputName" onChange={this.handleChange.bind( this )} value={this.state.inputName} />
+                    </div>
+                </form>
+            </div>
+        )
+    }
+}
+```
+
 
