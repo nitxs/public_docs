@@ -316,7 +316,7 @@ class TepCom1 extends React.Component {
 
   render() {
     return (
-        // 通过箭头函数的方式： react的事件对象e必须显示的进行传递
+        // 通过箭头函数的方式： react的事件对象e必须显示的进行传递，事件对象e显式传递的位置由开发者决定，这里我定在参数列表的末位，也可以根据实际需要放在参数列表的任意位置
         <button onClick={(e)=>this.deleteRow( 'AA', 'BB', 'CC', 'GG', e )}>
             delete Row
         </button>
