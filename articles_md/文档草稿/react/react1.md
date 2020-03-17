@@ -667,4 +667,227 @@ class CkAndInput extends React.Component{
 }
 ```
 
+## 状态提升
 
+在React中，当多个组件都需要反映相同的变化数据时，可以将这个共享的变化数据提升到最近的父组件中去。
+
+如下示例首先创建一个计算水温是否沸腾的温度计算器：
+
+```javascript
+// 判断水温是否沸腾并渲染DOM
+function BoilingVerdict( props ){
+    if( props.celsius >= 100 ){
+        return <p>The water would be boil.</p>
+    }else {
+        return <p>The water would not boil.</p>
+    }
+}
+
+// 输入摄氏水温值，并将该温度作为props参数传递给BoilingVerdict组件进行渲染，给出是否已沸腾的结果
+class Calculator extends React.Component{
+    constructor( props ){
+        super( props );
+        this.state = {
+            temperature: ''
+        }
+    }
+
+    handleChange( e ){
+        this.setState({
+            temperature: e.target.value
+        })
+    }
+
+    render(){
+        return (
+            <fieldset>
+                <legend>输入摄氏温度：</legend>
+                <input type="text" value={this.state.temperature} onChange={this.handleChange.bind( this )}/>
+                <BoilingVerdict celsius={this.state.temperature}></BoilingVerdict>
+            </fieldset>
+        )
+    }
+}
+```
+
+以此基础，创建一个状态提升的实践组件：
+
+```javascript
+const scaleNames = {
+    c: 'Celsius',
+    f: 'Fahrenheit'
+};
+  
+function toCelsius(fahrenheit) {
+    return (fahrenheit - 32) * 5 / 9;
+}
+
+function toFahrenheit(celsius) {
+    return (celsius * 9 / 5) + 32;
+}
+
+function tryConvert(temperature, convert) {
+    const input = parseFloat(temperature);
+    if (Number.isNaN(input)) {
+        return '';
+    }
+    const output = convert(input);
+    const rounded = Math.round(output * 1000) / 1000;
+    return rounded.toString();
+}
+
+function BoilingVerdict(props) {
+    if (props.celsius >= 100) {
+        return <p>The water would boil.</p>;
+    }
+    return <p>The water would not boil.</p>;
+}
+
+class TemperatureInput extends React.Component {
+    constructor(props) {
+        super(props);
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    handleChange(e) {
+        this.props.onTemperatureChange(e.target.value);
+    }
+
+    render() {
+        const temperature = this.props.temperature;
+        const scale = this.props.scale;
+        return (
+        <fieldset>
+            <legend>Enter temperature in {scaleNames[scale]}:</legend>
+            <input value={temperature}
+                    onChange={this.handleChange} />
+        </fieldset>
+        );
+    }
+}
+  
+class Calculator extends React.Component {
+    constructor(props) {
+      super(props);
+      this.handleCelsiusChange = this.handleCelsiusChange.bind(this);
+      this.handleFahrenheitChange = this.handleFahrenheitChange.bind(this);
+      this.state = {temperature: '', scale: 'c'};
+    }
+  
+    handleCelsiusChange(temperature) {
+      this.setState({scale: 'c', temperature});
+    }
+  
+    handleFahrenheitChange(temperature) {
+      this.setState({scale: 'f', temperature});
+    }
+  
+    render() {
+      const scale = this.state.scale;
+      const temperature = this.state.temperature;
+      const celsius = scale === 'f' ? tryConvert(temperature, toCelsius) : temperature;
+      const fahrenheit = scale === 'c' ? tryConvert(temperature, toFahrenheit) : temperature;
+  
+      return (
+        <div>
+          <TemperatureInput
+            scale="c"
+            temperature={celsius}
+            onTemperatureChange={this.handleCelsiusChange} />
+          <TemperatureInput
+            scale="f"
+            temperature={fahrenheit}
+            onTemperatureChange={this.handleFahrenheitChange} />
+          <BoilingVerdict
+            celsius={parseFloat(celsius)} />
+        </div>
+      );
+    }
+}
+```
+
+梳理逻辑：
+
+- React 会调用 DOM 中 `<input>` 的 `onChange` 方法。在本实例中，它是 `TemperatureInput` 组件的 `handleChange` 方法。
+- `TemperatureInput` 组件中的 `handleChange` 方法会调用 `this.props.onTemperatureChange()`，并传入新输入的值作为参数。其 props 诸如 `onTemperatureChange` 之类，均由父组件 `Calculator` 提供。
+- 起初渲染时，用于摄氏度输入的子组件 `TemperatureInput` 中 `onTemperatureChange` 方法为 `Calculator` 组件中的 `handleCelsiusChange` 方法，而，用于华氏度输入的子组件 `TemperatureInput` 中的 `onTemperatureChange` 方法为 `Calculator` 组件中的 `handleFahrenheitChange` 方法。因此，无论哪个输入框被编辑都会调用 `Calculator` 组件中对应的方法。
+- 在这些方法内部，`Calculator` 组件通过使用新的输入值与当前输入框对应的温度计量单位来调用 `this.setState()` 进而请求 React 重新渲染自己本身。
+- React 调用 `Calculator` 组件的 `render` 方法得到组件的 UI 呈现。温度转换在这时进行，两个输入框中的数值通过当前输入温度和其计量单位来重新计算获得。
+- React 使用 `Calculator` 组件提供的新 `props` 分别调用两个 `TemperatureInput` 子组件的 `render` 方法来获取子组件的 UI 呈现。
+- React 调用 `BoilingVerdict` 组件的 `render` 方法，并将摄氏温度值以组件 `props` 方式传入。
+- React DOM 根据输入值匹配水是否沸腾，并将结果更新至 DOM。我们刚刚编辑的输入框接收其当前值，另一个输入框内容更新为转换后的温度值。
+
+在 React 应用中，任何可变数据应当只有一个相对应的唯一“数据源”。通常，state 都是首先添加到需要渲染数据的组件中去。然后，如果其他组件也需要这个 state，那么你可以将它提升至这些组件的最近共同父组件中。你应当依靠自上而下的数据流，而不是尝试在不同组件间同步 state。
+
+## 组合
+
+React 有十分强大的组合模式。官方推荐使用组合而非继承来实现代码的重用。
+
+#### 包含关系
+
+有些组件无法提前知晓它们子组件的具体内容。在 Sidebar（侧边栏）和 Dialog（对话框）等展现通用容器（box）的组件中特别容易遇到这种情况。建议这些组件使用一个特殊的 children prop 来将他们的子组件传递到渲染结果中：
+
+```javascript
+class FancyBorder extends React.Component{
+    constructor( props ){
+        super( props );
+        this.state = {};
+    }
+
+    render(){
+        return (
+            <div>
+                {this.props.children}
+            </div>
+        )
+    }
+}
+
+class WelcomeDialog extends React.Component{
+    constructor( props ){
+        super( props );
+        this.state = {};
+    }
+
+    render(){
+        return (
+            <FancyBorder>
+                <h1 className="Dialog-title">
+                    Welcome
+                </h1>
+                <p className="Dialog-message">
+                    Thank you for visiting our spacecraft!
+                </p>
+            </FancyBorder>
+        )
+    }
+}
+```
+
+#### 特例关系
+
+有些时候，我们会把一些组件看作是其他组件的特殊实例，比如 WelcomeDialog 可以说是 Dialog 的特殊实例。在 React 中，我们也可以通过组合来实现这一点。“特殊”组件可以通过 props 定制并渲染“一般”组件：
+
+```javascript
+function Dialog(props) {
+  return (
+    <FancyBorder color="blue">
+      <h1 className="Dialog-title">
+        {props.title}
+      </h1>
+      <p className="Dialog-message">
+        {props.message}
+      </p>
+    </FancyBorder>
+  );
+}
+
+function WelcomeDialog() {
+  return (
+    <Dialog
+      title="Welcome"
+      message="Thank you for visiting our spacecraft!" />
+
+  );
+}
+```
