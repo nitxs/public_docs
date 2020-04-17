@@ -17,7 +17,7 @@
 
 以下将介绍常用组件的调用，包含对应html和js，如涉及css，也会加以说明。
 
-### datatable表格组件及衍生功能组件
+### 1.datatable表格组件及衍生功能组件
 
 包含datatable组件、
 
@@ -355,10 +355,10 @@ var columnDefs = [
 // datatables表格配置主体
 util.datatable({
     selector: '#dataTableIndex',
-    fixedColumns: {
+    fixedColumns: {     // 控制表格列固定
         leftColumns: 1
     },
-    ajax: {
+    ajax: {     // ajax获取列表数据
         url: ctx + '/rollMyLockResource/page',
         type: 'post',
         data: function(d){
@@ -419,32 +419,187 @@ util.datatable({
         });
     },
     createdRow: function( row, data, dataIndex ){
-        if( $('#changeType').val()=='B' || $('#changeType').val()=='C' ){
-            var lockIcon = '';
-            if( data.goodsStatus === 'B' ){ //锁定中
-                lockIcon += '<i class="icon-lockopen ui-red"></i>';
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).attr( "title", '点击图标，可取消锁货' )
-                // $( row ).find( "td" ).eq( 1 ).find( "span" ).addClass( "go-cancel-lock cur-point" );
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).addClass( "cur-point" );
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).append( lockIcon );
-                $( row ).addClass( "remind-bg" );
-            }else if( data.goodsStatus === 'C' ){   // 锁定成功，已锁定
-                lockIcon += '<i class="icon-lock ui-ft14 lock-green"></i>';
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).append( lockIcon );
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).attr( "title", '锁货成功，请做合同' )
-            }else if( data.goodsStatus === 'W' ){   // 锁货失败
-                lockIcon += '<i class="icon-lockopen"></i>';
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).addClass( "restore-wait cur-point" );
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).append( lockIcon );
-                $( row ).find( "td" ).eq( 1 ).find( "span" ).attr( "title", '指取消锁货并删除的数据' )
-            }
-        }
+        // 创建行时的回调
     },
     drawCallback: function( settings, json ){
-        if( settings.json.totalWeight ){
-            $( "#totalWeight" ).text( settings.json.totalWeight + '吨' )
-        }
+        // 列表重绘时的回调
     },
 });
 </script>
 ```
+
+### 2.筛选组件配置
+
+```html
+<div class="ui-ml30 ui-pr30" id="searchOptBox">
+    <form id="searchForm" method="post" class="search-form">
+        <input type="hidden" name="changeType" id="changeType" value="${changeType}">
+        <input type="hidden" value="${startLockApplyDate}" id="startLockApplyDateId">
+        <input type="hidden" value="${endLockApplyDate}" ID="endLockApplyDateId">
+        <!-- 筛选条件 -->
+        <div class="ui-col search-criter filters-wrap">
+            <div class="ui-col search-criter__btns">
+                <button type="button" class="ui-btn ui-btn-primary btn-search-data ui-mr10">查询</button>
+                <button type="button" class="ui-btn ui-btn-white" onclick="window.location.reload()">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+util.filterComponents({
+    filterItemArr: [
+        [{
+            defaultShow: true,
+            dataName: 'lockApplyDate',
+            labelName: '锁货时间',
+            formType: 'date',
+            formStartStyleClass: 'ui-col-50 ui-mr10',
+            formEndStyleClass: 'ui-col-45',
+            formStartClass: 'daterange-start',  // 调取日期组件的开始class
+            formEndClass: 'daterange-end',      // 调取日期组件的结束class
+            formStartPlaceHolder: '开始时间',
+            formEndPlaceHolder: '结束时间',
+            formStartName: 'startLockApplyDate',    // startname
+            formEndName: 'endLockApplyDate',        // endname
+            formDefaultStartDate: $("#startLockApplyDateId").val(),   // 设置默认开始日期
+            formDefaultEndDate: $("#endLockApplyDateId").val(),      // 设置默认结束日期
+        }],
+        [{
+            defaultShow: true,
+            dataName: 'buyUser',
+            labelName: '买方',
+            formType: 'text',
+            formPlaceHolder: '请输入买方',
+            formName: 'buyUser',    // name
+        },{
+            defaultShow: true,
+            dataName: 'area',
+            labelName: '区域',
+            formType: 'select',
+            formName: 'area',       // 下拉name
+            options: [
+                {val: '', text: '全部'},
+                {val: '无锡', text: '无锡'},
+                {val: '佛山', text: '佛山'}
+            ]
+        },{
+            dataName: 'lockUser',
+            labelName: '业务员',
+            formType: 'select',
+            formClass: 'lock-users',    // 下拉option通过ajax获取后插入html的class选择器
+            formName: 'lockUser',   // 下拉name
+        }],
+        [{
+            dataName: 'realThick',
+            labelName: '参厚范围',
+            formType: 'intervalText',
+            formMinPlaceHolder: '',
+            formMaxPlaceHolder: '',
+            formWidth: '300',
+            formMinName: 'startRealThick',  // 区间startname
+            formMaxName: 'endRealThick',    // 区间endname
+        }],
+        [{
+            dataName: 'realThickStr',
+            labelName: '参厚',
+            formType: 'text',
+            formWidth: '600',
+            formClass: 'real-thick-str',
+            formPlaceHolder: '搜多个参厚，按空格键或enter键隔开，如“0.506,0.761,0.884”',
+            formName: 'realThickStr',
+        }]
+    ]
+})
+
+!function(){
+    $.ajax({
+        url: ctx + '/newShareResourceBase/select',
+        type: 'POST',
+        success: function(data){
+            if(data.isSuccess === 'true'){
+                var arr = data.dptNameList;
+                var html = '';
+                arr.forEach(function(val){
+                    html += '<option value='+ val +'>'+ val +'</option>'
+                })
+                // 向select项中插入option
+                $( ".lock-users" ).append( html )
+            }
+        }
+    })
+})
+}
+</script>
+```
+
+### 3.详情页组件
+
+```html
+<!-- 详情页的html就不放了，直接看项目中详情页，可全盘复制 -->
+<script>
+util.slideDetail({
+    selector: '.table-list td:not(:first-child)',
+    url: ctx + '/myNewContract/detail',     // 详情页跳转地址
+    isLoad: true,
+    data: { changeDetailType: $('#changeType').val() },
+    slideInit: function(_this, el) {
+        // tab切换
+        util.swiperTab({
+            tabNavClass: '.swiper-navgation',
+            containerClass: '.tab-container',
+            simulateTouch: false,
+            speed: 0
+        });
+    },
+    slideComplete: function(_t, el) {   // 详情页面加载完成时回调函数
+        var contractIdVal = $(_t).parents('tr').find('.ch-list').val();
+        // 赋值详情页id
+        $('#detailID').val(contractIdVal);
+        $('#contractStatusHid').val($(_t).parents('tr').find('.hid-status').val());
+        $('#contractTypeHid').val($(_t).parents('tr').find('.hid-type').val());
+        $('#currentFutureHid').val($(_t).parents('tr').find('.hid-currentFuture').val());
+        $('#futureOutStatusHid').val($(_t).parents('tr').find('.hid-futureOutStatus').val());
+        $('#urlFirmIdHid').val($(_t).parents('tr').find('.hid-firmId').val());
+        //$('#changeDetailType').val($('#changeType').val());
+        // 分布请求数据: type -> 页面状态。id -> 数据id
+        getDeatilTabType($('#detailTabType').val(), contractIdVal);
+    }
+});
+
+//-----------------------
+// 详情tab切换，分步请求数据
+//-----------------------
+function getDeatilTabType(type, id) {
+    id = id || $('#detailID').val();
+    type = type || 'A';
+    // 客户信息（加载头部）
+    getMainInfo(id);
+    shouDetailBtns();
+    switch (type) {
+        case 'A':   // tab为A时
+            $('#detailTabType').val(type);
+            // 概要
+            break;
+        case 'B':   // tab为B时
+            $('#detailTabType').val(type);
+            getGoodsDetail( id )
+            break;
+        case 'C':
+            $('#detailTabType').val(type);
+            getOtherDetail(id);
+            break;
+        case 'D':
+            $('#detailTabType').val(type);
+            getFutureDetail(id);
+            break;
+        case 'E':
+            $('#detailTabType').val(type);
+            selectBatchContractDetail(id);
+            break;
+    }
+}
+</script>
+```
+
+### 4.弹窗组件
