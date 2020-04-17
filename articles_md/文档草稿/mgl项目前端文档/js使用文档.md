@@ -603,3 +603,37 @@ function getDeatilTabType(type, id) {
 ```
 
 ### 4.弹窗组件
+
+```javascript
+util.dialog({
+    fixed: true,
+    skin: 'crm-form',
+    title: '删除',
+    content: html,  // 变量html为弹窗中内容的html字符串
+    okValue: '确认',
+    ok: function () {   // 点击确认按钮提交时执行的回调
+        $.ajax({
+            url : ctx + '/newContractBase/deleteContract',
+            type : 'post',
+            data: {
+                contractIdStr: $( "#detailID" ).val()
+            },
+            success : function(data) {
+                if (data.isSuccess === 'true') {
+                    setTimeout(function(){
+                        window.location.reload();
+                    }, 850)
+                }
+                util.promptMsg({
+                    content: data.msg
+                });
+            }
+        });
+    },
+    cancelValue: '取消',
+    cancel: function() {},
+    onshow: function(){
+        // 弹窗打开时的回调，一般弹窗中的表单校验、方法定义均在这个回调里定义。
+    }
+});
+```
