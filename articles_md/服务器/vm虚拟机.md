@@ -22,6 +22,7 @@
 
 #### 用xshell连接ubuntu系统时，在ubuntu中需要先安装openssh-server
 命令为：`sudo apt-get install openssh-server`。
+https://www.jianshu.com/p/1b1e56a2ec4f
 
 #### 安装nodejs和npm
 
@@ -177,3 +178,19 @@ $ sudo apt-get dis-upgrade -y
 虚拟机中安装ubuntu过程简单，略过不提。
 
 进来后要安装东西，可以使用 `sudo apt-get update`  `sudo apt-get install net-tools`
+
+### centos7系统
+
+当本地windows中使用xSHell连接centose服务器提示失败时，检查CentOS7是否安装了openssh-server`yum list installed | grep openssh-server`
+
+没有安装则执行：`yum install openssh-server`
+
+如果已安装：找到/etc/ssh/目录下的sshd服务配置文件 sshd_config，用Vim编辑器打开
+取消注释（去掉#）Post 22、PermitRootLogin（开启远程登陆） PasswordAuthentication（开启使用密码作为连接远征）
+`vim /etc/ssh/sshd_config`
+
+运行sshd服务
+`service sshd start`
+
+设置开机启动
+`systemctl enable sshd.service`
