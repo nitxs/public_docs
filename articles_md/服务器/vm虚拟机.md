@@ -62,6 +62,39 @@ nitx@ubuntu:~$ npm -v
 # 可以删除 /usr/local/bin/目录下的node，npm，然后再创建软链接就行了
 nitx@ubuntu:~$ sudo rm -rf /usr/local/bin/node
 nitx@ubuntu:~$ sudo rm -rf /usr/local/bin/npm
+
+
+# 安装pm2 
+nitx@ubuntu:~$ npm install pm2 -g
+
+# 建立pm2软连接
+nitx@ubuntu:~$ sudo ln -s /home/nitx/node-v12.18.2-linux-x64/bin/pm2 /usr/local/bin
+
+# pm2启动nodejs项目
+pm2 start app.js
+
+# 在集群模式下启动4个应用实例，自动分配请求给每个实例，实现负载均衡
+pm2 start app.js -i 4
+
+# 列出所有已启动的进程（应用实例）
+pm2 list/ls
+
+# 显示所有应用实例的日志信息
+pm2 logs
+
+#  显示指定应用实例的日志信息
+pm2 logs [app-name]
+
+#  日志信息以JSON格式显示  (比较喜欢用这个形式显示日志)
+pm2 logs --json
+
+#  清除所有的l日志信息
+pm2 flush
+
+#  重载所有的日志信息
+pm2 reloadLogs
+
+# pm2 的日志文件在  /home/nitx/.pm2/logs 里面，分别在两个文件中 (app-error.log 和  app-out.log)
 ```
 
 #### 安装mysql
