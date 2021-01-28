@@ -42,3 +42,6 @@ maven打包java项目， `项目右键Run As -> Goals中添加打包命令（我
 # TomCat 
 
 tomcat中配置端口号 `tomcat根目录/conf/Server.xml中修改port值`
+
+# eclipse maven打包项目
+

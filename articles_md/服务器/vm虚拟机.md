@@ -109,6 +109,31 @@ sudo netstat -tap | grep mysql
 # 可以通过如下命令进入mysql服务：
 mysql -uroot -p你的密码
 
+# 在 MySQL 5.7 及之后的版本中，root 用户被默认设置为通过 auth_socket 插件（而非密码）认证，其主要原因是出于对数据库的安全性考虑。
+# 所以此时通过终端登录root时，会报错：
+mysql: [Warning] Using a password on the command line interface can be insecure.
+ERROR 1698 (28000): Access denied for user 'root'@'localhost'
+
+# 话虽如此，但偶尔也需要外部程序来访问，这时就会很麻烦了。为了使 root 用户能通过密码方式连接 MySQL，先通过终端打开 MySQL 的提示符：
+sudo mysql
+
+# 然后通过如下命令，检查 MySQL 中每个用户的认证方式：
+mysql> SELECT user, authentication_string, plugin, host FROM mysql.user;
++------------------+-------------------------------------------+-----------------------+-----------+
+| user             | authentication_string                     | plugin                | host      |
++------------------+-------------------------------------------+-----------------------+-----------+
+| root             |                                           | auth_socket           | localhost |
+| mysql.session    | *THISISNOTAVALIDPASSWORDTHATCANBEUSEDHERE | mysql_native_password | localhost |
+| mysql.sys        | *THISISNOTAVALIDPASSWORDTHATCANBEUSEDHERE | mysql_native_password | localhost |
+| debian-sys-maint | *ABA968D18E3A0B6DEB02F9D5FBDA21415A86977B | mysql_native_password | localhost |
++------------------+-------------------------------------------+-----------------------+-----------+
+4 rows in set (0.00 sec)
+
+# 显而易见，root 用户的认证方式是 auth_socket。现在运行如下命令，将认证方式更改为密码认证（即：mysql_native_password）：
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';
+
+# 完成之后，再来查看一下 root 用户的认证方式，确认是后mysql_native_password，让 root 用户以密码形式登录
+
 # 现在设置mysql允许远程访问，首先编辑文件/etc/mysql/mysql.conf.d/mysqld.cnf：
 sudo vi /etc/mysql/mysql.conf.d/mysqld.cnf
 # 注释掉bind-address = 127.0.0.1
@@ -121,6 +146,10 @@ service mysql restart
 
 # 现在在windows下可以使用navicat远程连接ubuntu下的mysql服务。
 ```
+
+
+
+腾讯云服务器中Mysql的root密码： @n741A852V
 
 
 
