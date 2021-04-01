@@ -98,3 +98,25 @@ Nginx配置文件的结构和最佳做法
 - `/opt/<site_name>`
 
 [参考](https://www.myfreax.com/how-to-install-nginx-on-ubuntu-18-04/)
+
+
+## vue项目部署nginx
+
+1. vue项目生产打包后，将dist文件夹上传到liunx服务器的/var/www/html/homeWeb目录
+2. 在ubuntu的nginx里，/etc/nginx/sites-available目录中添加单独针对homeWeb项目的服务器配置文件，命名为homeweb.conf，配置内容：
+```conf
+server {
+	listen 8027;	# 网站访问地址监听的商品
+	
+	server_name localhost;		# 网站网址，这里就是指服务器的IP地址
+
+	location / {
+		root /var/www/html/homeWeb/dist/;	# 商城前端项目存放目录
+		try_files $uri $uri/ /index.html;	# 文件地址重定向
+	}
+}
+```
+
+3. 然后将这个homeweb.conf文件软链到/etc/nginx/sites-enabled目录中，这样才能启用这个独立的站点配置，软链命令`ln -s /etc/nginx/sites-available/homeweb.conf /etc/nginx/sites-enabled/homeweb.conf`
+
+4. 这样，就能通过http://xxx.xxx.xxx.xx:8027/路径 来访问网站了
